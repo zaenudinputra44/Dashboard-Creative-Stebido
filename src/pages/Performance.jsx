@@ -53,11 +53,46 @@ const Performance = () => {
     return sortConfig.direction === 'asc' ? <FiChevronUp /> : <FiChevronDown />;
   };
 
+  const handleExportCSV = () => {
+    // 1. Definisikan header kolom
+    const headers = ["Konten", "Funnel", "Ratio", "Impressions", "Clicks", "CTR (%)", "Konversi", "CVR (%)", "ROAS"];
+    
+    // 2. Map data ke bentuk baris CSV
+    const csvRows = [
+      headers.join(","), // Baris pertama adalah header
+      ...processedData.map(item => [
+        `"${item.title}"`,
+        `"${item.funnel}"`,
+        `"${item.ratio}"`,
+        item.impressions,
+        item.clicks,
+        item.ctr,
+        item.transactions,
+        item.conversionRate,
+        item.roas
+      ].join(","))
+    ];
+
+    // 3. Gabungkan semua baris dengan newline
+    const csvContent = csvRows.join("\n");
+
+    // 4. Buat file Blob dan trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "Laporan_Performa_Konten.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="page-container">
       <div className="flex-between mb-4">
         <h2>Performa Konten</h2>
-        <button className="action-btn secondary">
+        <button className="action-btn secondary" onClick={handleExportCSV}>
           <FiDownload /> Export CSV
         </button>
       </div>
