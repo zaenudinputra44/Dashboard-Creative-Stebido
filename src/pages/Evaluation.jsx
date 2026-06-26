@@ -62,21 +62,32 @@ const Evaluation = () => {
 
       <div className="dashboard-main-grid">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {evaluations.map((evalItem) => (
-            <div className="card" key={evalItem.id}>
-              <h3 className="card-title" style={{ color: 'var(--primary-color)', fontSize: '1.1rem', marginBottom: '1rem' }}>
-                Evaluasi {evalItem.week}
-              </h3>
-              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingLeft: '0.5rem' }}>
-                {evalItem.notes.map((note, idx) => (
-                  <li key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                    <FiCheckSquare style={{ color: 'var(--success-color)', marginTop: '0.25rem', flexShrink: 0 }} />
-                    <span style={{ fontSize: '0.9rem' }}>{note}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {evaluations.map((evalItem) => {
+            let notesArray = [];
+            try {
+              notesArray = Array.isArray(evalItem.notes) 
+                ? evalItem.notes 
+                : (typeof evalItem.notes === 'string' ? JSON.parse(evalItem.notes) : []);
+            } catch (e) {
+              notesArray = [evalItem.notes];
+            }
+
+            return (
+              <div className="card" key={evalItem.id}>
+                <h3 className="card-title" style={{ color: 'var(--primary-color)', fontSize: '1.1rem', marginBottom: '1rem' }}>
+                  Evaluasi {evalItem.week}
+                </h3>
+                <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingLeft: '0.5rem' }}>
+                  {notesArray.map((note, idx) => (
+                    <li key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                      <FiCheckSquare style={{ color: 'var(--success-color)', marginTop: '0.25rem', flexShrink: 0 }} />
+                      <span style={{ fontSize: '0.9rem' }}>{note}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
 
         <div>
