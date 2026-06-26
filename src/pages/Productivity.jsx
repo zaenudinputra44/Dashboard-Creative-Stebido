@@ -5,7 +5,11 @@ import {
 import { teamData, kpiData } from '../data/dummyData';
 
 const Productivity = () => {
-  const productivityChartData = teamData.map((member) => ({
+  const filteredTeamData = teamData.filter(
+    (member) => member.role !== 'Supervisor' && member.role !== 'Manager'
+  );
+
+  const productivityChartData = filteredTeamData.map((member) => ({
     name: member.name.split(' ')[0],
     selesai: 0,
     revisi: 0,
@@ -71,7 +75,7 @@ const Productivity = () => {
             </tr>
           </thead>
           <tbody>
-            {teamData.map((member, index) => (
+            {filteredTeamData.map((member, index) => (
               <tr key={member.id}>
                 <td>{index + 1}</td>
                 <td>{member.name}</td>
