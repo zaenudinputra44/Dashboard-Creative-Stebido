@@ -4,7 +4,7 @@ import { FiSearch, FiFilter, FiDownload, FiChevronDown, FiChevronUp, FiLink, FiR
 import '../tables.css';
 
 const Performance = () => {
-  const [data, setData] = useState(contentPerformance);
+  const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterFunnel, setFilterFunnel] = useState('All');
   const [filterRatio, setFilterRatio] = useState('All');
@@ -16,16 +16,11 @@ const Performance = () => {
 
   // Load dari localStorage jika ada
   useEffect(() => {
-    const saved = localStorage.getItem('performanceData');
+    const saved = localStorage.getItem('performanceData_v2');
     if (saved) {
       setData(JSON.parse(saved));
     } else {
-      // Tambahkan property metaLink ke data dummy awal
-      const initialData = contentPerformance.map(item => ({
-        ...item,
-        metaLink: 'https://adsmanager.facebook.com/'
-      }));
-      setData(initialData);
+      setData([]); // Pastikan tabel kosong di awal
     }
   }, []);
 
@@ -66,7 +61,7 @@ const Performance = () => {
 
       const updatedData = [newData, ...data];
       setData(updatedData);
-      localStorage.setItem('performanceData', JSON.stringify(updatedData));
+      localStorage.setItem('performanceData_v2', JSON.stringify(updatedData));
       
       setNewLink('');
       setIsFetching(false);
