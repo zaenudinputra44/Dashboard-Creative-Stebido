@@ -43,6 +43,44 @@ export default async function handler(req, res) {
       );
     `;
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS performance_metrics (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255),
+        meta_link TEXT,
+        funnel VARCHAR(50),
+        ratio VARCHAR(20),
+        impressions INT,
+        clicks INT,
+        transactions INT,
+        roas DECIMAL(10,2),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS winning_contents (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        ctr DECIMAL(10,2),
+        transactions INT,
+        faktor_sukses TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS not_winning_contents (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        ctr DECIMAL(10,2),
+        conversion_rate DECIMAL(10,2),
+        indikasi_masalah TEXT,
+        decision VARCHAR(100) DEFAULT 'Belum Ditentukan',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
     // 2. Clear existing data (optional, but good for fresh migration)
     await sql`TRUNCATE TABLE monitoring_pekerjaan RESTART IDENTITY CASCADE`;
     await sql`TRUNCATE TABLE technical_issues RESTART IDENTITY CASCADE`;

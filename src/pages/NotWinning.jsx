@@ -13,12 +13,21 @@ const NotWinning = () => {
   const [newIssue, setNewIssue] = useState('');
 
   useEffect(() => {
-    const saved = localStorage.getItem('notWinningData');
-    if (saved) {
-      setData(JSON.parse(saved));
-    } else {
-      setData(notWinningContent.map(item => ({ ...item, decision: 'Belum Ditentukan' })));
-    }
+    fetch('/api/not_winning')
+      .then(res => {
+        if (!res.ok) throw new Error('API not available');
+        return res.json();
+      })
+      .then(dbData => setData(dbData))
+      .catch(err => {
+        console.warn('Gagal fetch API, fallback ke localStorage:', err.message);
+        const saved = localStorage.getItem('notWinningData');
+        if (saved) {
+          setData(JSON.parse(saved));
+        } else {
+          setData([]);
+        }
+      });
   }, []);
 
   const handleDecisionChange = (id, newDecision) => {
@@ -27,38 +36,77 @@ const NotWinning = () => {
     setSavedStatus(prev => ({ ...prev, [id]: false })); // Mark as unsaved
   };
 
-  const handleSave = (id) => {
+  const handleSave = async (id) => {
     setSavedStatus(prev => ({ ...prev, [id]: true }));
-    // Save to localStorage
-    localStorage.setItem('notWinningData', JSON.stringify(data));
+    
+    const itemToUpdate = data.find(item => item.id === id);
+    if (!itemToUpdate) return;
+
+    try {
+      const res = await fetch('/api/not_winning', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, decision: itemToUpdate.decision })
+      });
+      if (!res.ok) throw new Error('Gagal update ke DB');
+    } catch (err) {
+      console.warn('Mode Lokal: Menyimpan ke localStorage');
+      localStorage.setItem('notWinningData', JSON.stringify(data));
+    }
+
     setTimeout(() => {
       setSavedStatus(prev => ({ ...prev, [id]: false }));
     }, 2000);
   };
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
     if (!newTitle) return;
 
-    const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
-    const newItem = {
-      id: newId,
-      title: newTitle,
-      ctr: newCtr || '0.00',
-      conversionRate: newCvr || '0.00',
-      indikasiMasalah: newIssue || 'Perlu dianalisis',
-      decision: 'Belum Ditentukan'
-    };
+    try {
+      const payload = {
+        title: newTitle,
+        ctr: newCtr || '0.00',
+        conversionRate: newCvr || '0.00',
+        indikasiMasalah: newIssue || 'Perlu dianalisis',
+        decision: 'Belum Ditentukan'
+      };
 
-    const updatedData = [newItem, ...data];
-    setData(updatedData);
-    localStorage.setItem('notWinningData', JSON.stringify(updatedData));
+      const res = await fetch('/api/not_winning', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    // Reset form
-    setNewTitle('');
-    setNewCtr('');
-    setNewCvr('');
-    setNewIssue('');
+      if (!res.ok) throw new Error('Gagal simpan ke DB');
+      const newItem = await res.json();
+      
+      setData([newItem, ...data]);
+      setNewTitle('');
+      setNewCtr('');
+      setNewCvr('');
+      setNewIssue('');
+    } catch (err) {
+      console.warn('Mode Lokal: Menyimpan ke localStorage');
+      const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
+      const newItem = {
+        id: newId,
+        title: newTitle + ' (Local)',
+        ctr: newCtr || '0.00',
+        conversionRate: newCvr || '0.00',
+        indikasiMasalah: newIssue || 'Perlu dianalisis',
+        decision: 'Belum Ditentukan'
+      };
+
+      const updatedData = [newItem, ...data];
+      setData(updatedData);
+      localStorage.setItem('notWinningData', JSON.stringify(updatedData));
+
+      setNewTitle('');
+      setNewCtr('');
+      setNewCvr('');
+      setNewIssue('');
+    }
   };
 
   return (

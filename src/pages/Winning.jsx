@@ -13,12 +13,21 @@ const Winning = () => {
   const [newFactor, setNewFactor] = useState('');
 
   useEffect(() => {
-    const saved = localStorage.getItem('winningData');
-    if (saved) {
-      setData(JSON.parse(saved));
-    } else {
-      setData(winningContent);
-    }
+    fetch('/api/winning')
+      .then(res => {
+        if (!res.ok) throw new Error('API not available');
+        return res.json();
+      })
+      .then(dbData => setData(dbData))
+      .catch(err => {
+        console.warn('Gagal fetch API, fallback ke localStorage:', err.message);
+        const saved = localStorage.getItem('winningData');
+        if (saved) {
+          setData(JSON.parse(saved));
+        } else {
+          setData([]);
+        }
+      });
   }, []);
 
   const handleDuplicate = (id) => {
@@ -28,28 +37,52 @@ const Winning = () => {
     }, 2000);
   };
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
     if (!newTitle) return;
 
-    const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
-    const newItem = {
-      id: newId,
-      title: newTitle,
-      ctr: newCtr || '0.00',
-      transactions: newSales || '0',
-      faktorSukses: newFactor || 'Tidak ada keterangan'
-    };
+    try {
+      const payload = {
+        title: newTitle,
+        ctr: newCtr || '0.00',
+        transactions: newSales || '0',
+        faktorSukses: newFactor || 'Tidak ada keterangan'
+      };
 
-    const updatedData = [newItem, ...data];
-    setData(updatedData);
-    localStorage.setItem('winningData', JSON.stringify(updatedData));
+      const res = await fetch('/api/winning', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    // Reset form
-    setNewTitle('');
-    setNewCtr('');
-    setNewSales('');
-    setNewFactor('');
+      if (!res.ok) throw new Error('Gagal simpan ke DB');
+      const newItem = await res.json();
+      
+      setData([newItem, ...data]);
+      setNewTitle('');
+      setNewCtr('');
+      setNewSales('');
+      setNewFactor('');
+    } catch (err) {
+      console.warn('Mode Lokal: Menyimpan ke localStorage karena DB tidak tersedia');
+      const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
+      const newItem = {
+        id: newId,
+        title: newTitle + ' (Local)',
+        ctr: newCtr || '0.00',
+        transactions: newSales || '0',
+        faktorSukses: newFactor || 'Tidak ada keterangan'
+      };
+
+      const updatedData = [newItem, ...data];
+      setData(updatedData);
+      localStorage.setItem('winningData', JSON.stringify(updatedData));
+
+      setNewTitle('');
+      setNewCtr('');
+      setNewSales('');
+      setNewFactor('');
+    }
   };
 
   return (

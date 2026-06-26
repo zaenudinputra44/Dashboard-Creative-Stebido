@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { contentPerformance } from '../data/dummyData';
-import { FiSearch, FiFilter, FiDownload, FiChevronDown, FiChevronUp, FiLink, FiRefreshCw } from 'react-icons/fi';
+import { FiSearch, FiDownload, FiChevronDown, FiChevronUp, FiLink, FiRefreshCw } from 'react-icons/fi';
 import '../tables.css';
 
 const Performance = () => {
@@ -14,40 +13,72 @@ const Performance = () => {
   const [newLink, setNewLink] = useState('');
   const [isFetching, setIsFetching] = useState(false);
 
-  // Load dari localStorage jika ada
+  // Load dari API Vercel / Neon DB
   useEffect(() => {
-    const saved = localStorage.getItem('performanceData_v2');
-    if (saved) {
-      setData(JSON.parse(saved));
-    } else {
-      setData([]); // Pastikan tabel kosong di awal
-    }
+    fetch('/api/performance')
+      .then(res => {
+        if (!res.ok) throw new Error('API not available');
+        return res.json();
+      })
+      .then(dbData => setData(dbData))
+      .catch(err => {
+        console.warn('Gagal fetch API, fallback ke localStorage:', err.message);
+        const saved = localStorage.getItem('performanceData_v2');
+        if (saved) {
+          setData(JSON.parse(saved));
+        } else {
+          setData([]); // Fallback jika DB dan localStorage kosong
+        }
+      });
   }, []);
 
-  const handleFetchMetaAds = (e) => {
+  const handleFetchMetaAds = async (e) => {
     e.preventDefault();
     if (!newLink) return;
 
     setIsFetching(true);
 
-    // Simulasi proses penarikan data dari Meta Ads API (delay 1.5 detik)
-    setTimeout(() => {
-      const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
+    const impressions = Math.floor(Math.random() * 100000) + 10000;
+    const clicks = Math.floor(impressions * (Math.random() * 0.05 + 0.01)); // 1-6% CTR
+    const ctr = ((clicks / impressions) * 100).toFixed(2);
+    const transactions = Math.floor(clicks * (Math.random() * 0.05 + 0.005)); // 0.5-5.5% CVR
+    const conversionRate = transactions > 0 ? ((transactions / clicks) * 100).toFixed(2) : '0.00';
+    const roas = (Math.random() * 4 + 0.5).toFixed(1); // 0.5x - 4.5x ROAS
+
+    const funnels = ['Cold', 'Warm', 'Hot'];
+    const ratios = ['1:1', '4:5', '9:16'];
+
+    try {
+      const payload = {
+        title: `Konten Hasil Sync #${Math.floor(Math.random() * 1000)}`,
+        metaLink: newLink,
+        funnel: funnels[Math.floor(Math.random() * funnels.length)],
+        ratio: ratios[Math.floor(Math.random() * ratios.length)],
+        impressions,
+        clicks,
+        transactions,
+        roas
+      };
+
+      const res = await fetch('/api/performance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('Gagal simpan ke DB');
+      const newItem = await res.json();
       
-      // Generate random mocked metrics
-      const impressions = Math.floor(Math.random() * 100000) + 10000;
-      const clicks = Math.floor(impressions * (Math.random() * 0.05 + 0.01)); // 1-6% CTR
-      const ctr = ((clicks / impressions) * 100).toFixed(2);
-      const transactions = Math.floor(clicks * (Math.random() * 0.05 + 0.005)); // 0.5-5.5% CVR
-      const conversionRate = transactions > 0 ? ((transactions / clicks) * 100).toFixed(2) : '0.00';
-      const roas = (Math.random() * 4 + 0.5).toFixed(1); // 0.5x - 4.5x ROAS
-
-      const funnels = ['Cold', 'Warm', 'Hot'];
-      const ratios = ['1:1', '4:5', '9:16'];
-
+      setData([newItem, ...data]);
+      setNewLink('');
+      setIsFetching(false);
+    } catch (err) {
+      console.warn('Mode Lokal: Menyimpan ke localStorage karena DB tidak tersedia');
+      
+      const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
       const newData = {
         id: newId,
-        title: `Konten Hasil Sync #${newId}`,
+        title: `Konten Hasil Sync (Local) #${newId}`,
         funnel: funnels[Math.floor(Math.random() * funnels.length)],
         ratio: ratios[Math.floor(Math.random() * ratios.length)],
         impressions,
@@ -65,7 +96,7 @@ const Performance = () => {
       
       setNewLink('');
       setIsFetching(false);
-    }, 1500);
+    }
   };
 
   const handleSort = (key) => {
