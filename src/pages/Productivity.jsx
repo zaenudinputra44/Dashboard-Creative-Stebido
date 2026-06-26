@@ -5,13 +5,13 @@ import {
 import { teamData, kpiData } from '../data/dummyData';
 
 const Productivity = () => {
-  const productivityChartData = teamData.map((member, index) => ({
-    name: member.name.split(' ')[0], // Get first name
-    selesai: Math.max(5, 12 - index), // Mock data
-    revisi: index % 2 === 0 ? 2 : 1,  // Mock data
-    terlambat: index % 3,             // Mock data
-    ketepatan: Math.max(70, 100 - (index * 5)), // Mock data
-    kualitas: Math.max(75, 95 - (index * 2)), // Mock data
+  const productivityChartData = teamData.map((member) => ({
+    name: member.name.split(' ')[0],
+    selesai: 0,
+    revisi: 0,
+    terlambat: 0,
+    ketepatan: 0,
+    kualitas: 0,
   }));
 
   return (
@@ -23,10 +23,10 @@ const Productivity = () => {
           <h3 className="card-title">Skor Produktivitas</h3>
           <div className="kpi-grid mt-4">
             <div className="kpi-card" style={{ textAlign: 'center', padding: '2rem' }}>
-              <div style={{ fontSize: '4rem', fontWeight: 'bold', color: 'var(--success-color)' }}>
-                {kpiData.productivityScore}
+              <div style={{ fontSize: '4rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+                0
               </div>
-              <p className="card-title" style={{ marginTop: '0.5rem' }}>Kategori: <strong>Produktif</strong></p>
+              <p className="card-title" style={{ marginTop: '0.5rem' }}>Kategori: <strong>Belum Ada Data</strong></p>
             </div>
           </div>
           
