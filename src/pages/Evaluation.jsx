@@ -2,29 +2,54 @@ import React, { useState } from 'react';
 import { FiCheckSquare, FiSave } from 'react-icons/fi';
 
 const Evaluation = () => {
-  const [evaluations, setEvaluations] = useState([
-    {
-      id: 1,
-      week: 'Minggu Ke-2, Juni 2026',
-      notes: [
-        'CTR Video Edukasi meningkat 2% setelah thumbnail diganti.',
-        'Tim skripter sudah memenuhi target mingguan.',
-        'Perlu perbaikan pada server hosting karena sempat down 2 jam.'
-      ]
-    }
-  ]);
-
+  const [evaluations, setEvaluations] = useState([]);
   const [newEval, setNewEval] = useState({ week: '', note1: '', note2: '' });
 
-  const handleAddEvaluation = (e) => {
+  useEffect(() => {
+    fetch('/api/evaluation')
+      .then(res => res.json())
+      .then(data => {
+        // Fallback or API data
+        if (data.length > 0) {
+          setEvaluations(data);
+        } else {
+          setEvaluations([
+            {
+              id: 1,
+              week: 'Minggu Ke-2, Juni 2026',
+              notes: [
+                'CTR Video Edukasi meningkat 2% setelah thumbnail diganti.',
+                'Tim skripter sudah memenuhi target mingguan.',
+                'Perlu perbaikan pada server hosting karena sempat down 2 jam.'
+              ]
+            }
+          ]);
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  const handleAddEvaluation = async (e) => {
     e.preventDefault();
     if (!newEval.week || !newEval.note1) return;
     
-    const id = evaluations.length > 0 ? Math.max(...evaluations.map(e => e.id)) + 1 : 1;
     const notes = [newEval.note1];
     if (newEval.note2) notes.push(newEval.note2);
 
-    setEvaluations(prev => [{ id, week: newEval.week, notes }, ...prev]);
+    try {
+      const res = await fetch('/api/evaluation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ week: newEval.week, notes })
+      });
+      if (!res.ok) throw new Error('Gagal menambah evaluasi');
+      const savedEval = await res.json();
+      setEvaluations(prev => [savedEval, ...prev]);
+    } catch (err) {
+      const id = evaluations.length > 0 ? Math.max(...evaluations.map(e => e.id)) + 1 : 1;
+      setEvaluations(prev => [{ id, week: newEval.week, notes }, ...prev]);
+    }
+
     setNewEval({ week: '', note1: '', note2: '' });
   };
 

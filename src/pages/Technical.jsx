@@ -1,22 +1,59 @@
-import React, { useState } from 'react';
-import { technicalIssues } from '../data/dummyData';
+import React, { useState, useEffect } from 'react';
+import { technicalIssues as initialData } from '../data/dummyData';
 import { FiCheckCircle, FiTool, FiPlus, FiX } from 'react-icons/fi';
 
 const Technical = () => {
-  const [issues, setIssues] = useState(technicalIssues);
+  const [issues, setIssues] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newIssue, setNewIssue] = useState({ issue: '', severity: 'Rendah' });
 
-  const handleMarkResolved = (id) => {
-    setIssues(prev => prev.map(issue => 
-      issue.id === id ? { ...issue, status: 'Selesai' } : issue
-    ));
+  useEffect(() => {
+    fetch('/api/technical')
+      .then(res => {
+        if (!res.ok) throw new Error('API offline');
+        return res.json();
+      })
+      .then(data => {
+        setIssues(data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        setIssues(initialData);
+        setIsLoading(false);
+      });
+  }, []);
+
+  const handleMarkResolved = async (id) => {
+    try {
+      const res = await fetch('/api/technical', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: 'Selesai' })
+      });
+      if (!res.ok) throw new Error('Gagal update');
+      const updatedItem = await res.json();
+      setIssues(prev => prev.map(issue => issue.id === id ? updatedItem : issue));
+    } catch (err) {
+      setIssues(prev => prev.map(issue => issue.id === id ? { ...issue, status: 'Selesai' } : issue));
+    }
   };
 
-  const handleAddIssue = (e) => {
+  const handleAddIssue = async (e) => {
     e.preventDefault();
-    const id = issues.length > 0 ? Math.max(...issues.map(i => i.id)) + 1 : 1;
-    setIssues(prev => [...prev, { ...newIssue, id, status: 'Baru Masuk' }]);
+    try {
+      const res = await fetch('/api/technical', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newIssue)
+      });
+      if (!res.ok) throw new Error('Gagal menambah');
+      const newItem = await res.json();
+      setIssues(prev => [newItem, ...prev]);
+    } catch (err) {
+      const id = issues.length > 0 ? Math.max(...issues.map(i => i.id)) + 1 : 1;
+      setIssues(prev => [{ ...newIssue, id, status: 'Baru Masuk' }, ...prev]);
+    }
     setIsModalOpen(false);
     setNewIssue({ issue: '', severity: 'Rendah' });
   };

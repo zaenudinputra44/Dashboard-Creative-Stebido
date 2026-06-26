@@ -84,22 +84,55 @@ const Monitoring = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (editingItem) {
-      // Update existing
-      setData(prev => prev.map(item => item.id === editingItem.id ? { ...formData, id: item.id } : item));
-    } else {
-      // Create new
-      const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
-      setData(prev => [{ ...formData, id: newId }, ...prev]);
+    try {
+      if (editingItem) {
+        // Update existing via API
+        const res = await fetch('/api/monitoring', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...formData, id: editingItem.id })
+        });
+        if (!res.ok) throw new Error('Gagal update data');
+        const updatedItem = await res.json();
+        setData(prev => prev.map(item => item.id === editingItem.id ? updatedItem : item));
+      } else {
+        // Create new via API
+        const res = await fetch('/api/monitoring', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+        if (!res.ok) throw new Error('Gagal menambah data');
+        const newItem = await res.json();
+        setData(prev => [newItem, ...prev]);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Mode Lokal: Gagal menyimpan ke database (pastikan Anda sudah deploy ke Vercel atau jalankan server lokal). Data hanya tersimpan sementara.');
+      // Local fallback
+      if (editingItem) {
+        setData(prev => prev.map(item => item.id === editingItem.id ? { ...formData, id: item.id } : item));
+      } else {
+        const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
+        setData(prev => [{ ...formData, id: newId }, ...prev]);
+      }
     }
     handleCloseModal();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-      setData(prev => prev.filter(item => item.id !== id));
+      try {
+        const res = await fetch(`/api/monitoring?id=${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Gagal menghapus data');
+        setData(prev => prev.filter(item => item.id !== id));
+      } catch (err) {
+        console.error(err);
+        alert('Mode Lokal: Menghapus sementara di layar.');
+        setData(prev => prev.filter(item => item.id !== id));
+      }
     }
   };
 

@@ -1,10 +1,25 @@
 import { sql } from './db.js';
 
+const mapRow = (row) => ({
+  id: row.id,
+  week: row.week,
+  produk: row.produk,
+  linkKonten: row.link_konten,
+  tanggalKonten: row.tanggal_konten,
+  judulKonten: row.judul_konten,
+  jenisKonten: row.jenis_konten,
+  ratio: row.ratio,
+  funnel: row.funnel,
+  executorCWM: row.executor_cwm,
+  picKonten: row.pic_konten,
+  status: row.status
+});
+
 export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const data = await sql`SELECT * FROM monitoring_pekerjaan ORDER BY id DESC`;
-      return res.status(200).json(data);
+      return res.status(200).json(data.map(mapRow));
     } 
     
     else if (req.method === 'POST') {
@@ -16,7 +31,7 @@ export default async function handler(req, res) {
         (${week}, ${produk}, ${linkKonten}, ${tanggalKonten}, ${judulKonten}, ${jenisKonten}, ${ratio}, ${funnel}, ${executorCWM}, ${picKonten}, 'Baru Masuk')
         RETURNING *
       `;
-      return res.status(201).json(result[0]);
+      return res.status(201).json(mapRow(result[0]));
     }
     
     else if (req.method === 'PUT') {
@@ -29,7 +44,7 @@ export default async function handler(req, res) {
         WHERE id = ${id}
         RETURNING *
       `;
-      return res.status(200).json(result[0]);
+      return res.status(200).json(mapRow(result[0]));
     }
     
     else if (req.method === 'DELETE') {
