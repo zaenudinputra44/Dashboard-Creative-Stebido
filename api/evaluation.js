@@ -1,13 +1,17 @@
 import { sql } from './db.js';
 
 export default async function handler(req, res) {
-  try {
-    if (req.method === 'GET') {
+  if (req.method === 'GET') {
+    try {
       const data = await sql`SELECT * FROM evaluations ORDER BY id DESC`;
       return res.status(200).json(data);
-    } 
-    
-    else if (req.method === 'POST') {
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  if (req.method === 'POST') {
+    try {
       const { week, notes } = req.body;
       const result = await sql`
         INSERT INTO evaluations (week, notes)
@@ -15,13 +19,28 @@ export default async function handler(req, res) {
         RETURNING *
       `;
       return res.status(201).json(result[0]);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
     }
-    
-    else {
-      return res.status(405).json({ error: 'Method Not Allowed' });
-    }
-  } catch (error) {
-    console.error('API Error:', error);
-    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
   }
+
+  if (req.method === 'DELETE') {
+    try {
+      const { id } = req.query;
+      if (!id) {
+        const { id: bodyId } = req.body || {};
+        if (bodyId) {
+          await sql`DELETE FROM evaluations WHERE id = ${bodyId}`;
+          return res.status(200).json({ success: true });
+        }
+        return res.status(400).json({ error: 'Missing ID' });
+      }
+      await sql`DELETE FROM evaluations WHERE id = ${id}`;
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  return res.status(405).json({ error: 'Method Not Allowed' });
 }
