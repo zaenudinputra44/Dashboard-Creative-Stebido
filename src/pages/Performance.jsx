@@ -200,25 +200,25 @@ const Performance = () => {
       </div>
 
       <div className="card mb-4">
-        <h3 className="card-title mb-4" style={{ fontSize: '1.1rem' }}>Sinkronisasi Meta Ads</h3>
+        <h3 className="card-title mb-4" style={{ fontSize: '1.1rem' }}>Sinkronisasi Meta Ads API (Real-Time)</h3>
         <p className="text-muted" style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>
-          Masukkan link konten dari dashboard Meta Ads. Sistem akan otomatis menarik data performa (Impressions, Clicks, CTR, dll) untuk konten tersebut.
+          Masukkan <strong>Ad ID</strong> atau <strong>Campaign ID</strong> dari Meta Ads. Sistem akan memanggil Graph API secara langsung. Pastikan Anda telah mengatur API Token di menu Pengaturan.
         </p>
         <form onSubmit={handleFetchMetaAds} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ flex: '1', minWidth: '300px' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>URL Meta Ads Dashboard</label>
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Ad ID / Campaign ID</label>
             <input 
-              type="url" 
+              type="text" 
               className="filter-input" 
               style={{ width: '100%' }} 
-              placeholder="https://adsmanager.facebook.com/..." 
+              placeholder="Contoh: 12020293939..." 
               value={newLink}
               onChange={(e) => setNewLink(e.target.value)}
               required
             />
           </div>
           <button type="submit" className="action-btn" disabled={isFetching} style={{ minWidth: '150px', justifyContent: 'center' }}>
-            {isFetching ? <><FiRefreshCw className="spin" /> Menarik Data...</> : <><FiLink /> Tarik Data Meta</>}
+            {isFetching ? <><FiRefreshCw className="spin" /> Menarik Data API...</> : <><FiLink /> Tarik Data Meta</>}
           </button>
         </form>
       </div>

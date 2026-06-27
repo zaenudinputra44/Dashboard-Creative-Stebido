@@ -81,6 +81,15 @@ export default async function handler(req, res) {
       );
     `;
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS api_settings (
+        id SERIAL PRIMARY KEY,
+        setting_key VARCHAR(100) UNIQUE NOT NULL,
+        setting_value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
     // 2. Clear existing data (optional, but good for fresh migration)
     await sql`TRUNCATE TABLE monitoring_pekerjaan RESTART IDENTITY CASCADE`;
     await sql`TRUNCATE TABLE technical_issues RESTART IDENTITY CASCADE`;
