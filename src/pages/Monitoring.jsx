@@ -161,6 +161,24 @@ const Monitoring = () => {
     }
   };
 
+  const handleInlineChange = async (item, field, newValue) => {
+    const updatedItem = { ...item, [field]: newValue };
+    
+    // Optimistic UI update
+    setData(prev => prev.map(d => d.id === item.id ? updatedItem : d));
+
+    try {
+      const res = await fetch('/api/monitoring', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedItem)
+      });
+      if (!res.ok) throw new Error('Gagal update inline');
+    } catch (err) {
+      console.warn('Fallback lokal update inline', err);
+    }
+  };
+
   const handleToggleStatus = async (item) => {
     const newStatus = item.status === 'Selesai' ? 'Proses' : 'Selesai';
     const updatedItem = { ...item, status: newStatus };
@@ -284,8 +302,36 @@ const Monitoring = () => {
                 <td>{item.jenisKonten}</td>
                 <td>{item.ratio}</td>
                 <td>{item.funnel}</td>
-                <td>{item.executorCWM}</td>
-                <td>{item.picKonten}</td>
+                <td>
+                  <select 
+                    value={item.executorCWM || ''} 
+                    onChange={(e) => handleInlineChange(item, 'executorCWM', e.target.value)}
+                    style={{ padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px', cursor: 'pointer' }}
+                  >
+                    <option value="" disabled>-- Pilih --</option>
+                    {teamMembers.map(user => (
+                      <option key={`inline-exec-${user.id || user.name}`} value={user.name}>{user.name}</option>
+                    ))}
+                    {item.executorCWM && !teamMembers.some(u => u.name === item.executorCWM) && (
+                      <option value={item.executorCWM}>{item.executorCWM}</option>
+                    )}
+                  </select>
+                </td>
+                <td>
+                  <select 
+                    value={item.picKonten || ''} 
+                    onChange={(e) => handleInlineChange(item, 'picKonten', e.target.value)}
+                    style={{ padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px', cursor: 'pointer' }}
+                  >
+                    <option value="" disabled>-- Pilih --</option>
+                    {teamMembers.map(user => (
+                      <option key={`inline-pic-${user.id || user.name}`} value={user.name}>{user.name}</option>
+                    ))}
+                    {item.picKonten && !teamMembers.some(u => u.name === item.picKonten) && (
+                      <option value={item.picKonten}>{item.picKonten}</option>
+                    )}
+                  </select>
+                </td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button style={{ color: 'var(--text-muted)' }} onClick={() => handleOpenModal(item)} title="Edit"><FiEdit2 /></button>
