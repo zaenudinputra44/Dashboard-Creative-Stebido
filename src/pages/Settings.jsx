@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 const Settings = () => {
   const [metaToken, setMetaToken] = useState('');
   const [adAccountId, setAdAccountId] = useState('');
+  const [gmailUser, setGmailUser] = useState('');
+  const [gmailPass, setGmailPass] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -11,11 +13,13 @@ const Settings = () => {
       .then(data => {
         if (data.META_ACCESS_TOKEN) setMetaToken(data.META_ACCESS_TOKEN);
         if (data.META_AD_ACCOUNT_ID) setAdAccountId(data.META_AD_ACCOUNT_ID);
+        if (data.GMAIL_USER) setGmailUser(data.GMAIL_USER);
+        if (data.GMAIL_PASS) setGmailPass(data.GMAIL_PASS);
       })
       .catch(err => console.error('Failed to load settings:', err));
   }, []);
 
-  const handleSaveMeta = async (e) => {
+  const handleSaveSettings = async (e) => {
     e.preventDefault();
     setIsSaving(true);
     try {
@@ -25,12 +29,14 @@ const Settings = () => {
         body: JSON.stringify({
           settings: {
             META_ACCESS_TOKEN: metaToken,
-            META_AD_ACCOUNT_ID: adAccountId
+            META_AD_ACCOUNT_ID: adAccountId,
+            GMAIL_USER: gmailUser,
+            GMAIL_PASS: gmailPass
           }
         })
       });
       if (!res.ok) throw new Error('Failed to save settings');
-      alert('Kredensial Meta berhasil disimpan!');
+      alert('Pengaturan berhasil disimpan!');
     } catch (err) {
       alert('Mode Lokal: Kredensial hanya disimpan sementara di layar.');
     }
@@ -60,11 +66,11 @@ const Settings = () => {
         </div>
 
         <div className="card">
-          <h3 className="card-title">Integrasi Meta API</h3>
+          <h3 className="card-title">Integrasi API & SMTP</h3>
           <p className="text-muted" style={{ fontSize: '0.875rem', marginTop: '0.5rem', marginBottom: '1rem' }}>
-            Masukkan kredensial Meta Graph API untuk menarik data performa (CTR, ROAS, dll) secara real-time.
+            Masukkan kredensial API pihak ketiga dan email (Sandi Aplikasi) untuk menjalankan fungsi otomatis di dashboard.
           </p>
-          <form onSubmit={handleSaveMeta} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <label className="text-muted" style={{ fontSize: '0.875rem', display: 'block', marginBottom: '0.25rem' }}>Meta Access Token</label>
               <input 
@@ -87,7 +93,34 @@ const Settings = () => {
                 onChange={(e) => setAdAccountId(e.target.value)}
               />
             </div>
-            <button type="submit" className="action-btn" style={{ width: 'fit-content' }} disabled={isSaving}>
+            
+            <hr style={{ borderTop: '1px solid var(--border-color)', margin: '0.5rem 0' }} />
+            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>Email Reset Password (Gmail SMTP)</h4>
+            
+            <div>
+              <label className="text-muted" style={{ fontSize: '0.875rem', display: 'block', marginBottom: '0.25rem' }}>Email Pengirim (Gmail)</label>
+              <input 
+                type="email" 
+                className="filter-input" 
+                style={{ width: '100%' }} 
+                placeholder="admin@gmail.com" 
+                value={gmailUser}
+                onChange={(e) => setGmailUser(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-muted" style={{ fontSize: '0.875rem', display: 'block', marginBottom: '0.25rem' }}>Sandi Aplikasi (App Password)</label>
+              <input 
+                type="password" 
+                className="filter-input" 
+                style={{ width: '100%' }} 
+                placeholder="xxxx xxxx xxxx xxxx" 
+                value={gmailPass}
+                onChange={(e) => setGmailPass(e.target.value)}
+              />
+            </div>
+
+            <button type="submit" className="action-btn" style={{ width: 'fit-content', marginTop: '0.5rem' }} disabled={isSaving}>
               {isSaving ? 'Menyimpan...' : 'Simpan Kredensial'}
             </button>
           </form>

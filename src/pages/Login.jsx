@@ -32,22 +32,34 @@ const Login = () => {
     }
   };
 
-  const handleResetSubmit = (e) => {
+  const handleResetSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
     setResetSuccess('');
 
-    // Simulate sending reset email (1.5 seconds)
-    setTimeout(() => {
-      if (resetEmail.includes('@')) {
-        setResetSuccess(`Tautan untuk mereset password telah dikirim ke: ${resetEmail}`);
-        setResetEmail('');
-      } else {
-        setError('Mohon masukkan alamat email yang valid.');
+    try {
+      const response = await fetch('/api/reset_password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: resetEmail }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Terjadi kesalahan saat mengirim email.');
       }
+
+      setResetSuccess(data.message || `Tautan untuk mereset password telah dikirim ke: ${resetEmail}`);
+      setResetEmail('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
