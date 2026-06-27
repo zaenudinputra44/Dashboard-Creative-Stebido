@@ -99,6 +99,23 @@ const Performance = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus data sinkronisasi ini?')) return;
+    
+    try {
+      const res = await fetch(`/api/performance?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Gagal menghapus di DB');
+      
+      const updatedData = data.filter(item => item.id !== id);
+      setData(updatedData);
+    } catch (err) {
+      console.warn('Mode Lokal: Menghapus dari localStorage');
+      const updatedData = data.filter(item => item.id !== id);
+      setData(updatedData);
+      localStorage.setItem('performanceData_v2', JSON.stringify(updatedData));
+    }
+  };
+
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -245,6 +262,7 @@ const Performance = () => {
               <th onClick={() => handleSort('transactions')} style={{cursor: 'pointer'}}>Konversi {renderSortIcon('transactions')}</th>
               <th onClick={() => handleSort('conversionRate')} style={{cursor: 'pointer'}}>CVR (%) {renderSortIcon('conversionRate')}</th>
               <th onClick={() => handleSort('roas')} style={{cursor: 'pointer'}}>ROAS {renderSortIcon('roas')}</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -276,11 +294,20 @@ const Performance = () => {
                     {item.roas}x
                   </span>
                 </td>
+                <td>
+                  <button 
+                    onClick={() => handleDelete(item.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontSize: '1.2rem', padding: '0.25rem' }}
+                    title="Hapus Data"
+                  >
+                    &times;
+                  </button>
+                </td>
               </tr>
             ))}
             {processedData.length === 0 && (
               <tr>
-                <td colSpan="10" style={{ textAlign: 'center', padding: '2rem' }}>Tidak ada data yang cocok dengan pencarian Anda.</td>
+                <td colSpan="11" style={{ textAlign: 'center', padding: '2rem' }}>Tidak ada data yang cocok dengan pencarian Anda.</td>
               </tr>
             )}
           </tbody>

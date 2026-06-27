@@ -189,13 +189,21 @@ const NotWinning = () => {
                       <option value="Stop Iklan">Stop Iklan</option>
                     </select>
                   </td>
-                  <td>
+                  <td style={{ display: 'flex', gap: '0.5rem' }}>
                     <button 
                       className={`action-btn ${savedStatus[item.id] ? 'secondary' : ''}`}
                       onClick={() => handleSave(item.id)}
                       style={{ backgroundColor: savedStatus[item.id] ? 'var(--success-color)' : '', color: savedStatus[item.id] ? 'white' : '' }}
                     >
                       {savedStatus[item.id] ? <><FiCheck /> Tersimpan</> : <><FiSave /> Simpan</>}
+                    </button>
+                    <button 
+                      className="action-btn"
+                      onClick={() => handleDelete(item.id)}
+                      style={{ backgroundColor: 'var(--danger-color)', color: 'white' }}
+                      title="Hapus Data"
+                    >
+                      Hapus
                     </button>
                   </td>
                 </tr>

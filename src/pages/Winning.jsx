@@ -85,6 +85,23 @@ const Winning = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus data ini?')) return;
+    
+    try {
+      const res = await fetch(`/api/winning?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Gagal menghapus di DB');
+      
+      const updatedData = data.filter(item => item.id !== id);
+      setData(updatedData);
+    } catch (err) {
+      console.warn('Mode Lokal: Menghapus dari localStorage');
+      const updatedData = data.filter(item => item.id !== id);
+      setData(updatedData);
+      localStorage.setItem('winningData', JSON.stringify(updatedData));
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="mb-4">
@@ -124,11 +141,19 @@ const Winning = () => {
           </div>
         ) : (
           data.map((item) => (
-            <div className="card" key={item.id} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div className="card" key={item.id} style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
               <div className="flex-between mb-4">
-                <h3 className="card-title" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>{item.title}</h3>
+                <h3 className="card-title" style={{ color: 'var(--text-main)', fontSize: '1.1rem', paddingRight: '2rem' }}>{item.title}</h3>
                 <span className="badge badge-success">Winning</span>
               </div>
+              
+              <button 
+                onClick={() => handleDelete(item.id)}
+                style={{ position: 'absolute', top: '1.2rem', right: '1.2rem', background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontSize: '1.1rem' }}
+                title="Hapus Data"
+              >
+                &times;
+              </button>
               
               <div style={{ marginBottom: '1.5rem', flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
