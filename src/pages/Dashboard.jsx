@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
-import { chartData, technicalIssues } from '../data/dummyData';
-import { FiCheckCircle, FiClock, FiAlertTriangle, FiTrendingUp } from 'react-icons/fi';
+import { FiCheckCircle, FiClock, FiAlertTriangle, FiTrendingUp, FiCheckSquare, FiDollarSign } from 'react-icons/fi';
 import './Dashboard.css';
 
 const KPICard = ({ title, value, icon, trend, trendValue, colorClass }) => (
@@ -28,16 +27,25 @@ const KPICard = ({ title, value, icon, trend, trendValue, colorClass }) => (
 
 const Dashboard = () => {
   const [monitoringData, setMonitoringData] = useState([]);
+  const [technicalIssues, setTechnicalIssues] = useState([]);
+  const [evaluations, setEvaluations] = useState([]);
+  const [performanceData, setPerformanceData] = useState([]);
   
-  const fetchData = () => {
-    fetch('/api/monitoring')
-      .then(res => res.json())
-      .then(dbData => {
-        setMonitoringData(dbData);
-      })
-      .catch(err => {
-        console.warn('Dashboard fetch error:', err.message);
-      });
+  const fetchData = async () => {
+    try {
+      const [monRes, techRes, evalRes, perfRes] = await Promise.all([
+        fetch('/api/monitoring').then(r => r.ok ? r.json() : []),
+        fetch('/api/technical').then(r => r.ok ? r.json() : []),
+        fetch('/api/evaluation').then(r => r.ok ? r.json() : []),
+        fetch('/api/performance').then(r => r.ok ? r.json() : [])
+      ]);
+      setMonitoringData(monRes);
+      setTechnicalIssues(techRes);
+      setEvaluations(evalRes);
+      setPerformanceData(perfRes);
+    } catch (err) {
+      console.warn('Dashboard fetch error:', err.message);
+    }
   };
 
   useEffect(() => {
@@ -52,6 +60,18 @@ const Dashboard = () => {
 
   const dueTodayJobs = monitoringData.filter(job => job.status !== 'Selesai').slice(0, 3);
   const unresolvedIssues = technicalIssues.filter(issue => issue.status !== 'Selesai');
+  
+  // Performa metrics
+  const totalSpend = performanceData.reduce((acc, curr) => acc + (parseFloat(curr.spend) || 0), 0);
+  const totalRoas = performanceData.reduce((acc, curr) => acc + (parseFloat(curr.roas) || 0), 0);
+  const avgRoas = performanceData.length > 0 ? (totalRoas / performanceData.length).toFixed(2) : 0;
+  
+  // Transform performance data for chart
+  const dynamicChartData = performanceData.slice(0, 5).map(item => ({
+    name: item.title?.substring(0, 10) + '...',
+    target: item.spend || 0,
+    realisasi: (item.roas * item.spend) || 0
+  }));
 
   // Identify top PIC dynamically
   const picStats = {};
@@ -98,15 +118,24 @@ const Dashboard = () => {
           trendValue="0%" 
           colorClass="text-warning" 
         />
+        <KPICard 
+          title="Rata-Rata ROAS Iklan" 
+          value={`${avgRoas}x`}
+          icon={<FiDollarSign size={24} />} 
+          trend="up" 
+          trendValue="Dynamic" 
+          colorClass="text-success" 
+        />
       </div>
 
       <div className="dashboard-main-grid">
         {/* Chart Section */}
         <div className="card chart-section">
-          <h3 className="card-title">Grafik Target vs Realisasi Pekerjaan</h3>
+          <h3 className="card-title">Grafik Spend vs Estimasi Revenue (Top 5 Konten)</h3>
           <div className="chart-container">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+            {dynamicChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={dynamicChartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                 <XAxis dataKey="name" stroke="var(--text-muted)" />
                 <YAxis stroke="var(--text-muted)" />
@@ -114,10 +143,15 @@ const Dashboard = () => {
                   contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}
                 />
                 <Legend />
-                <Bar dataKey="target" name="Target" fill="var(--gray-color)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="realisasi" name="Realisasi" fill="var(--primary-color)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="target" name="Spend (Pengeluaran)" fill="var(--gray-color)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="realisasi" name="Estimasi Revenue" fill="var(--primary-color)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-muted)' }}>
+                Belum ada data performa. Silakan isi di menu Performa Konten.
+              </div>
+            )}
           </div>
         </div>
 
@@ -151,10 +185,33 @@ const Dashboard = () => {
                   <span className="item-dot bg-danger"></span>
                   <div className="item-content">
                     <p className="item-title">{issue.issue}</p>
-                    <p className="item-desc">Status: {issue.status}</p>
+                    <p className="item-desc">Severity: {issue.severity} | Status: {issue.status}</p>
                   </div>
                 </div>
               ))}
+              {unresolvedIssues.length === 0 && (
+                <p className="text-muted" style={{ fontSize: '0.85rem' }}>Tidak ada kendala teknis.</p>
+              )}
+            </div>
+
+            <div className="list-group mt-4">
+              <h4 className="list-subtitle">Evaluasi & Rekomendasi Terbaru</h4>
+              {evaluations.slice(0, 2).map(evalItem => (
+                <div key={evalItem.id} className="list-item" style={{ alignItems: 'flex-start' }}>
+                  <span className="item-dot bg-primary" style={{ marginTop: '5px' }}></span>
+                  <div className="item-content">
+                    <p className="item-title">{evalItem.week}</p>
+                    <ul style={{ paddingLeft: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                      {(evalItem.notes || []).slice(0, 2).map((note, idx) => (
+                        <li key={idx} style={{ marginBottom: '2px' }}>{note}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+              {evaluations.length === 0 && (
+                <p className="text-muted" style={{ fontSize: '0.85rem' }}>Belum ada catatan evaluasi.</p>
+              )}
             </div>
           </div>
           
