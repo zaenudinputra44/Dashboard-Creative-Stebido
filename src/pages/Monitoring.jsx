@@ -8,7 +8,7 @@ const Monitoring = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/monitoring')
       .then(res => {
         if (!res.ok) throw new Error('API not available locally without Vercel CLI');
@@ -23,7 +23,14 @@ const Monitoring = () => {
         setData(initialData);
         setIsLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 10000);
+    return () => clearInterval(interval);
   }, []);
+
   const [filterWeek, setFilterWeek] = useState('All');
   
   // Modal State
@@ -41,7 +48,8 @@ const Monitoring = () => {
     ratio: '1:1',
     funnel: 'Cold',
     executorCWM: '',
-    picKonten: ''
+    picKonten: '',
+    status: 'Baru Masuk'
   });
 
   const filteredData = data.filter(item => {
@@ -68,7 +76,8 @@ const Monitoring = () => {
         ratio: '1:1',
         funnel: 'Cold',
         executorCWM: '',
-        picKonten: ''
+        picKonten: '',
+        status: 'Baru Masuk'
       });
     }
     setIsModalOpen(true);
@@ -136,6 +145,25 @@ const Monitoring = () => {
     }
   };
 
+  const handleToggleStatus = async (item) => {
+    const newStatus = item.status === 'Selesai' ? 'Proses' : 'Selesai';
+    const updatedItem = { ...item, status: newStatus };
+    
+    // Optimistic UI update
+    setData(prev => prev.map(d => d.id === item.id ? updatedItem : d));
+
+    try {
+      const res = await fetch('/api/monitoring', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedItem)
+      });
+      if (!res.ok) throw new Error('Gagal update status');
+    } catch (err) {
+      console.error('Mode Lokal: Gagal menyimpan status ke server.', err);
+    }
+  };
+
   return (
     <div className="page-container" style={{ position: 'relative' }}>
       <div className="flex-between mb-4">
@@ -173,6 +201,7 @@ const Monitoring = () => {
         <table className="data-table">
           <thead>
             <tr>
+              <th>Status</th>
               <th>Week</th>
               <th>Produk</th>
               <th>Link Konten</th>
@@ -189,6 +218,18 @@ const Monitoring = () => {
           <tbody>
             {filteredData.map(item => (
               <tr key={item.id}>
+                <td style={{ textAlign: 'center' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={item.status === 'Selesai'} 
+                    onChange={() => handleToggleStatus(item)}
+                    style={{ transform: 'scale(1.5)', cursor: 'pointer' }}
+                    title={item.status === 'Selesai' ? "Tandai Belum Selesai" : "Tandai Selesai"}
+                  />
+                  <div style={{ fontSize: '0.75rem', marginTop: '0.25rem', color: item.status === 'Selesai' ? 'var(--success-color)' : 'var(--warning-color)' }}>
+                    {item.status === 'Selesai' ? 'Selesai' : 'Proses'}
+                  </div>
+                </td>
                 <td><span className="badge badge-info">{item.week}</span></td>
                 <td>{item.produk}</td>
                 <td>
@@ -199,7 +240,7 @@ const Monitoring = () => {
                   ) : "-"}
                 </td>
                 <td>{item.tanggalKonten}</td>
-                <td className="font-medium">{item.judulKonten}</td>
+                <td className="font-medium" style={{ textDecoration: item.status === 'Selesai' ? 'line-through' : 'none', opacity: item.status === 'Selesai' ? 0.6 : 1 }}>{item.judulKonten}</td>
                 <td>{item.jenisKonten}</td>
                 <td>{item.ratio}</td>
                 <td>{item.funnel}</td>
@@ -215,7 +256,7 @@ const Monitoring = () => {
             ))}
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan="11" style={{ textAlign: 'center', padding: '2rem' }}>Tidak ada data monitoring ditemukan.</td>
+                <td colSpan="12" style={{ textAlign: 'center', padding: '2rem' }}>Tidak ada data monitoring ditemukan.</td>
               </tr>
             )}
           </tbody>

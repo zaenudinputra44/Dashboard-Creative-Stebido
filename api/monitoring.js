@@ -35,12 +35,12 @@ export default async function handler(req, res) {
     }
     
     else if (req.method === 'PUT') {
-      const { id, week, produk, linkKonten, tanggalKonten, judulKonten, jenisKonten, ratio, funnel, executorCWM, picKonten } = req.body;
+      const { id, week, produk, linkKonten, tanggalKonten, judulKonten, jenisKonten, ratio, funnel, executorCWM, picKonten, status } = req.body;
       const result = await sql`
         UPDATE monitoring_pekerjaan 
         SET week=${week}, produk=${produk}, link_konten=${linkKonten}, tanggal_konten=${tanggalKonten}, 
             judul_konten=${judulKonten}, jenis_konten=${jenisKonten}, ratio=${ratio}, funnel=${funnel}, 
-            executor_cwm=${executorCWM}, pic_konten=${picKonten}
+            executor_cwm=${executorCWM}, pic_konten=${picKonten}, status=${status}
         WHERE id = ${id}
         RETURNING *
       `;

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
-import { kpiData, chartData, technicalIssues, monitoringData } from '../data/dummyData';
+import { chartData, technicalIssues } from '../data/dummyData';
 import { FiCheckCircle, FiClock, FiAlertTriangle, FiTrendingUp } from 'react-icons/fi';
 import './Dashboard.css';
 
@@ -27,8 +27,48 @@ const KPICard = ({ title, value, icon, trend, trendValue, colorClass }) => (
 );
 
 const Dashboard = () => {
-  const dueTodayJobs = monitoringData.filter(job => job.status === 'Proses').slice(0, 3);
+  const [monitoringData, setMonitoringData] = useState([]);
+  
+  const fetchData = () => {
+    fetch('/api/monitoring')
+      .then(res => res.json())
+      .then(dbData => {
+        setMonitoringData(dbData);
+      })
+      .catch(err => {
+        console.warn('Dashboard fetch error:', err.message);
+      });
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 10000); // Polling setiap 10 detik
+    return () => clearInterval(interval);
+  }, []);
+
+  const totalJobs = monitoringData.length;
+  const completedJobs = monitoringData.filter(job => job.status === 'Selesai').length;
+  const inProgressJobs = monitoringData.filter(job => job.status !== 'Selesai').length;
+
+  const dueTodayJobs = monitoringData.filter(job => job.status !== 'Selesai').slice(0, 3);
   const unresolvedIssues = technicalIssues.filter(issue => issue.status !== 'Selesai');
+
+  // Identify top PIC dynamically
+  const picStats = {};
+  monitoringData.forEach(job => {
+    if (job.status === 'Selesai') {
+      const pic = job.picKonten ? job.picKonten.split(' ')[0] : 'Unknown';
+      picStats[pic] = (picStats[pic] || 0) + 1;
+    }
+  });
+  let topPic = 'Belum Ada';
+  let topPicScore = 0;
+  Object.keys(picStats).forEach(pic => {
+    if (picStats[pic] > topPicScore) {
+      topPicScore = picStats[pic];
+      topPic = pic;
+    }
+  });
 
   return (
     <div className="dashboard-container">
@@ -36,7 +76,7 @@ const Dashboard = () => {
       <div className="kpi-grid">
         <KPICard 
           title="Total Pekerjaan" 
-          value={kpiData.totalJobs} 
+          value={totalJobs} 
           icon={<FiCheckCircle size={24} />} 
           trend="up" 
           trendValue="10%" 
@@ -44,7 +84,7 @@ const Dashboard = () => {
         />
         <KPICard 
           title="Pekerjaan Selesai" 
-          value={kpiData.completedJobs} 
+          value={completedJobs} 
           icon={<FiCheckCircle size={24} />} 
           trend="up" 
           trendValue="15%" 
@@ -52,7 +92,7 @@ const Dashboard = () => {
         />
         <KPICard 
           title="Pekerjaan Masih Proses" 
-          value={kpiData.inProgressJobs} 
+          value={inProgressJobs} 
           icon={<FiClock size={24} />} 
           trend="stable" 
           trendValue="0%" 
@@ -60,7 +100,7 @@ const Dashboard = () => {
         />
         <KPICard 
           title="Pekerjaan Terlambat" 
-          value={kpiData.delayedJobs} 
+          value={0} // To be implemented later when deadline feature is added
           icon={<FiAlertTriangle size={24} />} 
           trend="down" 
           trendValue="5%" 
@@ -97,16 +137,19 @@ const Dashboard = () => {
             </h3>
             
             <div className="list-group">
-              <h4 className="list-subtitle">Pekerjaan Jatuh Tempo</h4>
+              <h4 className="list-subtitle">Pekerjaan Belum Selesai (Proses)</h4>
               {dueTodayJobs.map(job => (
                 <div key={job.id} className="list-item">
                   <span className="item-dot bg-warning"></span>
                   <div className="item-content">
                     <p className="item-title">{job.judulKonten}</p>
-                    <p className="item-desc">Executor: {job.executorCWM}</p>
+                    <p className="item-desc">PIC: {job.picKonten}</p>
                   </div>
                 </div>
               ))}
+              {dueTodayJobs.length === 0 && (
+                <p className="text-muted" style={{ fontSize: '0.85rem' }}>Semua pekerjaan sudah diselesaikan!</p>
+              )}
             </div>
 
             <div className="list-group mt-4">
@@ -126,8 +169,8 @@ const Dashboard = () => {
           <div className="card list-card mt-4 bg-gradient-primary">
             <h3 className="card-title text-white">Insight Otomatis</h3>
             <ul className="insight-list">
-              <li><FiTrendingUp className="mr-2" /> PIC paling produktif minggu ini: <strong>Siti</strong></li>
-              <li><FiTrendingUp className="mr-2" /> CTR tertinggi dicapai oleh Konten Marketing 3 (4.5%)</li>
+              <li><FiTrendingUp className="mr-2" /> PIC paling produktif saat ini: <strong>{topPic}</strong> ({topPicScore} Selesai)</li>
+              <li><FiTrendingUp className="mr-2" /> Tingkat penyelesaian tim: <strong>{totalJobs > 0 ? Math.round((completedJobs/totalJobs)*100) : 0}%</strong></li>
             </ul>
           </div>
         </div>
