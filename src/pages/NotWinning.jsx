@@ -16,8 +16,9 @@ const NotWinning = () => {
   const [newCpa, setNewCpa] = useState('');
   const [newRoas, setNewRoas] = useState('');
   const [newIssue, setNewIssue] = useState('');
+  const [isFetchingMeta, setIsFetchingMeta] = useState(false);
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/not_winning')
       .then(res => {
         if (!res.ok) throw new Error('API not available');
@@ -29,11 +30,51 @@ const NotWinning = () => {
         const saved = localStorage.getItem('notWinningData');
         if (saved) {
           setData(JSON.parse(saved));
-        } else {
-          setData([]);
         }
       });
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 10000); // Polling setiap 10 detik
+    return () => clearInterval(interval);
   }, []);
+
+  const handleFetchMetaAds = async () => {
+    if (!newAdId) {
+      alert('Masukkan Ad ID terlebih dahulu!');
+      return;
+    }
+    setIsFetchingMeta(true);
+    try {
+      const res = await fetch('/api/meta_sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adId: newAdId })
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Gagal menarik data Meta');
+      
+      const { ctr, conversionRate, spend, cpc, cpa, roas } = result.data;
+      setNewCtr(ctr);
+      setNewCvr(conversionRate);
+      setNewBudget(spend);
+      setNewCpc(cpc);
+      setNewCpa(cpa);
+      setNewRoas(roas);
+      alert('Berhasil tersinkronisasi dengan Meta Ads!');
+    } catch (err) {
+      alert(err.message);
+      // Fallback simulasi jika gagal atau tidak ada token
+      setNewCtr((Math.random() * 1 + 0.1).toFixed(2));
+      setNewCvr((Math.random() * 0.5 + 0.1).toFixed(2));
+      setNewBudget(Math.floor(Math.random() * 500000) + 50000);
+      setNewCpc((Math.random() * 5000 + 1000).toFixed(2));
+      setNewCpa((Math.random() * 100000 + 20000).toFixed(2));
+      setNewRoas((Math.random() * 0.8 + 0.1).toFixed(2));
+    }
+    setIsFetchingMeta(false);
+  };
 
   const handleDecisionChange = (id, newDecision) => {
     const updatedData = data.map(item => item.id === id ? { ...item, decision: newDecision } : item);
@@ -89,9 +130,7 @@ const NotWinning = () => {
       });
 
       if (!res.ok) throw new Error('Gagal simpan ke DB');
-      const newItem = await res.json();
       
-      setData([newItem, ...data]);
       setNewTitle('');
       setNewAdId('');
       setNewCtr('');
@@ -101,6 +140,7 @@ const NotWinning = () => {
       setNewCpa('');
       setNewRoas('');
       setNewIssue('');
+      fetchData(); // Refresh UI langsung
     } catch (err) {
       console.warn('Mode Lokal: Menyimpan ke localStorage');
       const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
@@ -134,6 +174,21 @@ const NotWinning = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus data ini?')) return;
+    
+    try {
+      const res = await fetch(`/api/not_winning?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Gagal menghapus di DB');
+      
+      fetchData();
+    } catch (err) {
+      const updatedData = data.filter(item => item.id !== id);
+      setData(updatedData);
+      localStorage.setItem('notWinningData', JSON.stringify(updatedData));
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="flex-between mb-4">
@@ -150,9 +205,14 @@ const NotWinning = () => {
             <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Judul Konten</label>
             <input type="text" className="filter-input" style={{ width: '100%' }} value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Masukkan judul..." required />
           </div>
-          <div style={{ flex: '1 1 150px' }}>
+          <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column' }}>
             <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Ad ID / Campaign ID</label>
-            <input type="text" className="filter-input" style={{ width: '100%' }} value={newAdId} onChange={(e) => setNewAdId(e.target.value)} placeholder="Opsional" />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input type="text" className="filter-input" style={{ width: '100%' }} value={newAdId} onChange={(e) => setNewAdId(e.target.value)} placeholder="Opsional" />
+              <button type="button" className="action-btn secondary" onClick={handleFetchMetaAds} disabled={isFetchingMeta}>
+                {isFetchingMeta ? 'Menarik...' : 'Tarik Meta'}
+              </button>
+            </div>
           </div>
           <div style={{ flex: '1 1 100px' }}>
             <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Budget Spent (Rp)</label>

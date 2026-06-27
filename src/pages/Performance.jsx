@@ -14,7 +14,7 @@ const Performance = () => {
   const [isFetching, setIsFetching] = useState(false);
 
   // Load dari API Vercel / Neon DB
-  useEffect(() => {
+  const fetchData = () => {
     fetch('/api/performance')
       .then(res => {
         if (!res.ok) throw new Error('API not available');
@@ -26,10 +26,14 @@ const Performance = () => {
         const saved = localStorage.getItem('performanceData_v2');
         if (saved) {
           setData(JSON.parse(saved));
-        } else {
-          setData([]); // Fallback jika DB dan localStorage kosong
         }
       });
+  };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 10000); // Polling setiap 10 detik
+    return () => clearInterval(interval);
   }, []);
 
   const handleFetchMetaAds = async (e) => {
@@ -67,11 +71,10 @@ const Performance = () => {
       });
 
       if (!res.ok) throw new Error('Gagal simpan ke DB');
-      const newItem = await res.json();
       
-      setData([newItem, ...data]);
       setNewLink('');
       setIsFetching(false);
+      fetchData(); // Refresh UI langsung
     } catch (err) {
       console.warn('Mode Lokal: Menyimpan ke localStorage karena DB tidak tersedia');
       
@@ -106,13 +109,61 @@ const Performance = () => {
       const res = await fetch(`/api/performance?id=${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Gagal menghapus di DB');
       
-      const updatedData = data.filter(item => item.id !== id);
-      setData(updatedData);
+      fetchData();
     } catch (err) {
-      console.warn('Mode Lokal: Menghapus dari localStorage');
       const updatedData = data.filter(item => item.id !== id);
       setData(updatedData);
       localStorage.setItem('performanceData_v2', JSON.stringify(updatedData));
+    }
+  };
+
+  const handleMakeWinning = async (item) => {
+    if (!window.confirm(`Jadikan "${item.title}" sebagai Winning Content?`)) return;
+    try {
+      const payload = {
+        title: item.title,
+        adId: item.metaLink,
+        ctr: item.ctr,
+        transactions: item.transactions,
+        budgetSpent: 0,
+        roas: item.roas,
+        faktorSukses: 'Dipindah otomatis dari Performa Konten',
+        skalaTindakan: 'Scale Up Budget'
+      };
+      await fetch('/api/winning', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      alert('Berhasil dipindahkan ke Winning Content!');
+    } catch (err) {
+      alert('Gagal memindahkan data.');
+    }
+  };
+
+  const handleMakeNotWinning = async (item) => {
+    if (!window.confirm(`Jadikan "${item.title}" sebagai Konten Tidak Winning?`)) return;
+    try {
+      const payload = {
+        title: item.title,
+        adId: item.metaLink,
+        ctr: item.ctr,
+        conversionRate: item.conversionRate,
+        budgetSpent: 0,
+        cpc: 0,
+        cpa: 0,
+        roas: item.roas,
+        indikasiMasalah: 'Dipindah otomatis dari Performa Konten',
+        decision: 'Belum Ditentukan'
+      };
+      await fetch('/api/not_winning', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      alert('Berhasil dipindahkan ke Konten Tidak Winning!');
+    } catch (err) {
+      alert('Gagal memindahkan data.');
     }
   };
 
@@ -294,14 +345,30 @@ const Performance = () => {
                     {item.roas}x
                   </span>
                 </td>
-                <td>
+                <td style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                  <button 
+                    className="action-btn"
+                    onClick={() => handleMakeWinning(item)}
+                    style={{ backgroundColor: 'var(--success-color)', color: 'white', padding: '0.4rem 0.6rem', fontSize: '0.75rem', minWidth: 'auto' }}
+                    title="Jadikan Winning"
+                  >
+                    🏆
+                  </button>
+                  <button 
+                    className="action-btn"
+                    onClick={() => handleMakeNotWinning(item)}
+                    style={{ backgroundColor: 'var(--warning-color)', color: 'white', padding: '0.4rem 0.6rem', fontSize: '0.75rem', minWidth: 'auto' }}
+                    title="Jadikan Not Winning"
+                  >
+                    📉
+                  </button>
                   <button 
                     className="action-btn"
                     onClick={() => handleDelete(item.id)}
-                    style={{ backgroundColor: 'var(--danger-color)', color: 'white', padding: '0.4rem 0.8rem', fontSize: '0.875rem' }}
+                    style={{ backgroundColor: 'var(--danger-color)', color: 'white', padding: '0.4rem 0.6rem', fontSize: '0.75rem', minWidth: 'auto' }}
                     title="Hapus Data"
                   >
-                    Hapus
+                    &times;
                   </button>
                 </td>
               </tr>
