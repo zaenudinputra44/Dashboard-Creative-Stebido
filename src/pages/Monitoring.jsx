@@ -7,6 +7,7 @@ const Monitoring = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [teamMembers, setTeamMembers] = useState([]);
 
   const fetchData = () => {
     fetch('/api/monitoring')
@@ -24,9 +25,21 @@ const Monitoring = () => {
         setIsLoading(false);
       });
   };
+  
+  const fetchUsers = () => {
+    fetch('/api/users')
+      .then(res => res.ok ? res.json() : [])
+      .then(users => {
+        if (Array.isArray(users)) {
+          setTeamMembers(users);
+        }
+      })
+      .catch(err => console.warn('Gagal memuat data tim', err));
+  };
 
   useEffect(() => {
     fetchData();
+    fetchUsers();
     const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, []);
@@ -335,11 +348,23 @@ const Monitoring = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label>Executor CWM</label>
-                  <input type="text" name="executorCWM" value={formData.executorCWM} onChange={handleInputChange} required className="login-input" placeholder="Nama Executor" />
+                  <select name="executorCWM" value={formData.executorCWM} onChange={handleInputChange} required className="login-input">
+                    <option value="" disabled>Pilih Executor CWM...</option>
+                    {teamMembers.map(user => (
+                      <option key={`exec-${user.id}`} value={user.name}>{user.name} ({user.role})</option>
+                    ))}
+                    <option value="Lainnya">Lainnya...</option>
+                  </select>
                 </div>
                 <div className="form-group">
                   <label>PIC Konten (Adv/Skripter)</label>
-                  <input type="text" name="picKonten" value={formData.picKonten} onChange={handleInputChange} required className="login-input" placeholder="Nama PIC" />
+                  <select name="picKonten" value={formData.picKonten} onChange={handleInputChange} required className="login-input">
+                    <option value="" disabled>Pilih PIC Konten...</option>
+                    {teamMembers.map(user => (
+                      <option key={`pic-${user.id}`} value={user.name}>{user.name} ({user.role})</option>
+                    ))}
+                    <option value="Lainnya">Lainnya...</option>
+                  </select>
                 </div>
               </div>
 
