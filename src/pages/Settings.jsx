@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react';
 const Settings = () => {
   const [metaToken, setMetaToken] = useState('');
   const [adAccountId, setAdAccountId] = useState('');
-  const [gmailUser, setGmailUser] = useState('');
-  const [gmailPass, setGmailPass] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -13,8 +11,6 @@ const Settings = () => {
       .then(data => {
         if (data.META_ACCESS_TOKEN) setMetaToken(data.META_ACCESS_TOKEN);
         if (data.META_AD_ACCOUNT_ID) setAdAccountId(data.META_AD_ACCOUNT_ID);
-        if (data.GMAIL_USER) setGmailUser(data.GMAIL_USER);
-        if (data.GMAIL_PASS) setGmailPass(data.GMAIL_PASS);
       })
       .catch(err => console.error('Failed to load settings:', err));
   }, []);
@@ -29,9 +25,7 @@ const Settings = () => {
         body: JSON.stringify({
           settings: {
             META_ACCESS_TOKEN: metaToken,
-            META_AD_ACCOUNT_ID: adAccountId,
-            GMAIL_USER: gmailUser,
-            GMAIL_PASS: gmailPass
+            META_AD_ACCOUNT_ID: adAccountId
           }
         })
       });
@@ -93,34 +87,8 @@ const Settings = () => {
                 onChange={(e) => setAdAccountId(e.target.value)}
               />
             </div>
-            
-            <hr style={{ borderTop: '1px solid var(--border-color)', margin: '0.5rem 0' }} />
-            <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>Email Reset Password (Gmail SMTP)</h4>
-            
-            <div>
-              <label className="text-muted" style={{ fontSize: '0.875rem', display: 'block', marginBottom: '0.25rem' }}>Email Pengirim (Gmail)</label>
-              <input 
-                type="email" 
-                className="filter-input" 
-                style={{ width: '100%' }} 
-                placeholder="admin@gmail.com" 
-                value={gmailUser}
-                onChange={(e) => setGmailUser(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="text-muted" style={{ fontSize: '0.875rem', display: 'block', marginBottom: '0.25rem' }}>Sandi Aplikasi (App Password)</label>
-              <input 
-                type="password" 
-                className="filter-input" 
-                style={{ width: '100%' }} 
-                placeholder="xxxx xxxx xxxx xxxx" 
-                value={gmailPass}
-                onChange={(e) => setGmailPass(e.target.value)}
-              />
-            </div>
 
-            <button type="submit" className="action-btn" style={{ width: 'fit-content', marginTop: '0.5rem' }} disabled={isSaving}>
+            <button type="submit" className="action-btn" style={{ width: 'fit-content' }} disabled={isSaving}>
               {isSaving ? 'Menyimpan...' : 'Simpan Kredensial'}
             </button>
           </form>
