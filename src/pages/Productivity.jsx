@@ -76,7 +76,7 @@ const Productivity = () => {
                 {totalSelesai}
               </div>
               <p className="card-title" style={{ marginTop: '0.5rem' }}>Total Pekerjaan <strong>Selesai</strong></p>
-              <p className="text-muted" style={{ fontSize: '0.9rem', marginTop: '0.25rem' }}>Rata-rata {rataRataSelesai} pekerjaan / PIC</p>
+              <p className="text-muted" style={{ fontSize: '0.9rem', marginTop: '0.25rem' }}>Rata-rata {rataRataSelesai} pekerjaan / Executor CWM</p>
             </div>
           </div>
           
@@ -88,7 +88,7 @@ const Productivity = () => {
         </div>
 
         <div className="card">
-          <h3 className="card-title">Perbandingan Pekerjaan Selesai (PIC)</h3>
+          <h3 className="card-title">Perbandingan Pekerjaan Selesai (Executor CWM)</h3>
           <div className="chart-container">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={productivityChartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
@@ -111,7 +111,7 @@ const Productivity = () => {
           <thead>
             <tr>
               <th>Peringkat</th>
-              <th>Nama PIC</th>
+              <th>Executor CWM</th>
               <th>Pekerjaan Selesai (✅)</th>
               <th>Masih Proses (⏳)</th>
               <th>Ketepatan Waktu</th>
