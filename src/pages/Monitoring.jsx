@@ -348,39 +348,41 @@ const Monitoring = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label>Executor CWM</label>
-                  <input 
-                    list="executor-list" 
+                  <select 
                     name="executorCWM" 
                     value={formData.executorCWM} 
                     onChange={handleInputChange} 
                     required 
-                    className="login-input" 
-                    placeholder="Pilih atau ketik nama Executor..." 
-                    autoComplete="off"
-                  />
-                  <datalist id="executor-list">
+                    className="login-input"
+                    style={{ cursor: 'pointer', appearance: 'auto' }}
+                  >
+                    <option value="" disabled>-- Pilih Executor CWM --</option>
                     {teamMembers.map(user => (
                       <option key={`exec-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
                     ))}
-                  </datalist>
+                    {formData.executorCWM && !teamMembers.some(u => u.name === formData.executorCWM) && (
+                      <option value={formData.executorCWM}>{formData.executorCWM} (Data Lama)</option>
+                    )}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label>PIC Konten (Adv/Skripter)</label>
-                  <input 
-                    list="pic-list" 
+                  <select 
                     name="picKonten" 
                     value={formData.picKonten} 
                     onChange={handleInputChange} 
                     required 
-                    className="login-input" 
-                    placeholder="Pilih atau ketik nama PIC..." 
-                    autoComplete="off"
-                  />
-                  <datalist id="pic-list">
+                    className="login-input"
+                    style={{ cursor: 'pointer', appearance: 'auto' }}
+                  >
+                    <option value="" disabled>-- Pilih PIC Konten --</option>
                     {teamMembers.map(user => (
                       <option key={`pic-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
                     ))}
-                  </datalist>
+                    {formData.picKonten && !teamMembers.some(u => u.name === formData.picKonten) && (
+                      <option value={formData.picKonten}>{formData.picKonten} (Data Lama)</option>
+                    )}
+                  </select>
                 </div>
               </div>
 
