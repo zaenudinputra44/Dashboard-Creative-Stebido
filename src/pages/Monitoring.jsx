@@ -50,10 +50,6 @@ const Monitoring = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   
-  // Custom Input State
-  const [isCustomExecutor, setIsCustomExecutor] = useState(false);
-  const [isCustomPic, setIsCustomPic] = useState(false);
-  
   // Form State
   const [formData, setFormData] = useState({
     week: 'Week 1 (1-7)',
@@ -81,8 +77,6 @@ const Monitoring = () => {
     if (item) {
       setEditingItem(item);
       setFormData(item);
-      setIsCustomExecutor(false);
-      setIsCustomPic(false);
     } else {
       setEditingItem(null);
       setFormData({
@@ -98,8 +92,6 @@ const Monitoring = () => {
         picKonten: '',
         status: 'Baru Masuk'
       });
-      setIsCustomExecutor(false);
-      setIsCustomPic(false);
     }
     setIsModalOpen(true);
   };
@@ -111,19 +103,6 @@ const Monitoring = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Handle Lainnya selection
-    if (name === 'executorCWM' && value === 'Lainnya') {
-      setIsCustomExecutor(true);
-      setFormData(prev => ({ ...prev, executorCWM: '' }));
-      return;
-    }
-    if (name === 'picKonten' && value === 'Lainnya') {
-      setIsCustomPic(true);
-      setFormData(prev => ({ ...prev, picKonten: '' }));
-      return;
-    }
-
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -369,43 +348,39 @@ const Monitoring = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label>Executor CWM</label>
-                  {isCustomExecutor ? (
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input type="text" name="executorCWM" value={formData.executorCWM} onChange={handleInputChange} required className="login-input" placeholder="Ketik nama Executor..." autoFocus />
-                      <button type="button" onClick={() => setIsCustomExecutor(false)} className="btn-secondary" style={{ padding: '0 1rem' }} title="Batal">X</button>
-                    </div>
-                  ) : (
-                    <select name="executorCWM" value={formData.executorCWM} onChange={handleInputChange} required className="login-input">
-                      <option value="" disabled>Pilih Executor CWM...</option>
-                      {teamMembers.map(user => (
-                        <option key={`exec-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
-                      ))}
-                      {formData.executorCWM && !teamMembers.some(u => u.name === formData.executorCWM) && (
-                        <option value={formData.executorCWM}>{formData.executorCWM} (Custom)</option>
-                      )}
-                      <option value="Lainnya">Lainnya (Ketik Manual)...</option>
-                    </select>
-                  )}
+                  <input 
+                    list="executor-list" 
+                    name="executorCWM" 
+                    value={formData.executorCWM} 
+                    onChange={handleInputChange} 
+                    required 
+                    className="login-input" 
+                    placeholder="Pilih atau ketik nama Executor..." 
+                    autoComplete="off"
+                  />
+                  <datalist id="executor-list">
+                    {teamMembers.map(user => (
+                      <option key={`exec-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
+                    ))}
+                  </datalist>
                 </div>
                 <div className="form-group">
                   <label>PIC Konten (Adv/Skripter)</label>
-                  {isCustomPic ? (
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input type="text" name="picKonten" value={formData.picKonten} onChange={handleInputChange} required className="login-input" placeholder="Ketik nama PIC..." autoFocus />
-                      <button type="button" onClick={() => setIsCustomPic(false)} className="btn-secondary" style={{ padding: '0 1rem' }} title="Batal">X</button>
-                    </div>
-                  ) : (
-                    <select name="picKonten" value={formData.picKonten} onChange={handleInputChange} required className="login-input">
-                      <option value="" disabled>Pilih PIC Konten...</option>
-                      {teamMembers.map(user => (
-                        <option key={`pic-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
-                      ))}
-                      {formData.picKonten && !teamMembers.some(u => u.name === formData.picKonten) && (
-                        <option value={formData.picKonten}>{formData.picKonten} (Custom)</option>
-                      )}
-                      <option value="Lainnya">Lainnya (Ketik Manual)...</option>
-                    </select>
-                  )}
+                  <input 
+                    list="pic-list" 
+                    name="picKonten" 
+                    value={formData.picKonten} 
+                    onChange={handleInputChange} 
+                    required 
+                    className="login-input" 
+                    placeholder="Pilih atau ketik nama PIC..." 
+                    autoComplete="off"
+                  />
+                  <datalist id="pic-list">
+                    {teamMembers.map(user => (
+                      <option key={`pic-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
+                    ))}
+                  </datalist>
                 </div>
               </div>
 
