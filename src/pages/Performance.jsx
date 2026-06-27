@@ -296,11 +296,12 @@ const Performance = () => {
                 </td>
                 <td>
                   <button 
+                    className="action-btn"
                     onClick={() => handleDelete(item.id)}
-                    style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontSize: '1.2rem', padding: '0.25rem' }}
+                    style={{ backgroundColor: 'var(--danger-color)', color: 'white', padding: '0.4rem 0.8rem', fontSize: '0.875rem' }}
                     title="Hapus Data"
                   >
-                    &times;
+                    Hapus
                   </button>
                 </td>
               </tr>
