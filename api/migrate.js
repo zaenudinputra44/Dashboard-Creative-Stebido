@@ -62,9 +62,13 @@ export default async function handler(req, res) {
       CREATE TABLE IF NOT EXISTS winning_contents (
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
+        ad_id VARCHAR(100),
         ctr DECIMAL(10,2),
         transactions INT,
+        budget_spent DECIMAL(10,2) DEFAULT 0,
+        roas DECIMAL(10,2) DEFAULT 0,
         faktor_sukses TEXT,
+        skala_tindakan VARCHAR(100) DEFAULT 'Scale Up Budget',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
@@ -73,8 +77,13 @@ export default async function handler(req, res) {
       CREATE TABLE IF NOT EXISTS not_winning_contents (
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
+        ad_id VARCHAR(100),
         ctr DECIMAL(10,2),
         conversion_rate DECIMAL(10,2),
+        budget_spent DECIMAL(10,2) DEFAULT 0,
+        cpc DECIMAL(10,2) DEFAULT 0,
+        cpa DECIMAL(10,2) DEFAULT 0,
+        roas DECIMAL(10,2) DEFAULT 0,
         indikasi_masalah TEXT,
         decision VARCHAR(100) DEFAULT 'Belum Ditentukan',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

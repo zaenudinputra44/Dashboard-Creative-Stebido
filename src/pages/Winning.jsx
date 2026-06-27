@@ -8,8 +8,11 @@ const Winning = () => {
   
   // State form
   const [newTitle, setNewTitle] = useState('');
+  const [newAdId, setNewAdId] = useState('');
   const [newCtr, setNewCtr] = useState('');
   const [newSales, setNewSales] = useState('');
+  const [newBudget, setNewBudget] = useState('');
+  const [newRoas, setNewRoas] = useState('');
   const [newFactor, setNewFactor] = useState('');
 
   useEffect(() => {
@@ -44,9 +47,13 @@ const Winning = () => {
     try {
       const payload = {
         title: newTitle,
+        adId: newAdId,
         ctr: newCtr || '0.00',
         transactions: newSales || '0',
-        faktorSukses: newFactor || 'Tidak ada keterangan'
+        budgetSpent: newBudget || '0',
+        roas: newRoas || '0.00',
+        faktorSukses: newFactor || 'Tidak ada keterangan',
+        skalaTindakan: 'Scale Up Budget'
       };
 
       const res = await fetch('/api/winning', {
@@ -60,8 +67,11 @@ const Winning = () => {
       
       setData([newItem, ...data]);
       setNewTitle('');
+      setNewAdId('');
       setNewCtr('');
       setNewSales('');
+      setNewBudget('');
+      setNewRoas('');
       setNewFactor('');
     } catch (err) {
       console.warn('Mode Lokal: Menyimpan ke localStorage karena DB tidak tersedia');
@@ -69,9 +79,13 @@ const Winning = () => {
       const newItem = {
         id: newId,
         title: newTitle + ' (Local)',
+        adId: newAdId,
         ctr: newCtr || '0.00',
         transactions: newSales || '0',
-        faktorSukses: newFactor || 'Tidak ada keterangan'
+        budgetSpent: newBudget || '0',
+        roas: newRoas || '0.00',
+        faktorSukses: newFactor || 'Tidak ada keterangan',
+        skalaTindakan: 'Scale Up Budget'
       };
 
       const updatedData = [newItem, ...data];
@@ -79,8 +93,11 @@ const Winning = () => {
       localStorage.setItem('winningData', JSON.stringify(updatedData));
 
       setNewTitle('');
+      setNewAdId('');
       setNewCtr('');
       setNewSales('');
+      setNewBudget('');
+      setNewRoas('');
       setNewFactor('');
     }
   };
@@ -116,17 +133,29 @@ const Winning = () => {
             <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Judul Konten</label>
             <input type="text" className="filter-input" style={{ width: '100%' }} value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Masukkan judul..." required />
           </div>
-          <div style={{ flex: '1 1 100px' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>CTR (%)</label>
-            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newCtr} onChange={(e) => setNewCtr(e.target.value)} placeholder="Contoh: 3.50" />
+          <div style={{ flex: '1 1 150px' }}>
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Ad ID / Campaign ID</label>
+            <input type="text" className="filter-input" style={{ width: '100%' }} value={newAdId} onChange={(e) => setNewAdId(e.target.value)} placeholder="Opsional" />
           </div>
           <div style={{ flex: '1 1 100px' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Sales (Konversi)</label>
-            <input type="number" className="filter-input" style={{ width: '100%' }} value={newSales} onChange={(e) => setNewSales(e.target.value)} placeholder="Jumlah sales" />
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Budget (Rp)</label>
+            <input type="number" className="filter-input" style={{ width: '100%' }} value={newBudget} onChange={(e) => setNewBudget(e.target.value)} placeholder="0" />
+          </div>
+          <div style={{ flex: '1 1 100px' }}>
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>CTR (%)</label>
+            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newCtr} onChange={(e) => setNewCtr(e.target.value)} placeholder="3.50" />
+          </div>
+          <div style={{ flex: '1 1 100px' }}>
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Sales</label>
+            <input type="number" className="filter-input" style={{ width: '100%' }} value={newSales} onChange={(e) => setNewSales(e.target.value)} placeholder="0" />
+          </div>
+          <div style={{ flex: '1 1 100px' }}>
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>ROAS</label>
+            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newRoas} onChange={(e) => setNewRoas(e.target.value)} placeholder="2.5" />
           </div>
           <div style={{ flex: '1 1 250px' }}>
             <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Faktor Sukses</label>
-            <input type="text" className="filter-input" style={{ width: '100%' }} value={newFactor} onChange={(e) => setNewFactor(e.target.value)} placeholder="Contoh: Hook kuat di 3 detik awal" />
+            <input type="text" className="filter-input" style={{ width: '100%' }} value={newFactor} onChange={(e) => setNewFactor(e.target.value)} placeholder="Contoh: Hook kuat" />
           </div>
           <button type="submit" className="action-btn" style={{ minWidth: '120px', justifyContent: 'center' }}>
             <FiPlus /> Tambah
@@ -155,30 +184,53 @@ const Winning = () => {
                 &times;
               </button>
               
+              {item.adId && (
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem', marginTop: '-0.5rem' }}>
+                  Ad ID: {item.adId}
+                </div>
+              )}
+              
               <div style={{ marginBottom: '1.5rem', flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                  <span className="text-muted" style={{ fontSize: '0.875rem' }}>CTR</span>
-                  <span className="font-medium" style={{ color: 'var(--success-color)' }}>{item.ctr}%</span>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem', backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: '8px' }}>
+                  <div>
+                    <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BUDGET SPENT</div>
+                    <div className="font-medium">Rp {parseInt(item.budgetSpent || 0).toLocaleString('id-ID')}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>ROAS</div>
+                    <div className="font-medium" style={{ color: 'var(--success-color)' }}>{item.roas}x</div>
+                  </div>
+                  <div>
+                    <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CTR</div>
+                    <div className="font-medium" style={{ color: 'var(--primary-color)' }}>{item.ctr}%</div>
+                  </div>
+                  <div>
+                    <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>SALES</div>
+                    <div className="font-medium">{item.transactions}</div>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                  <span className="text-muted" style={{ fontSize: '0.875rem' }}>Konversi</span>
-                  <span className="font-medium">{item.transactions} Sales</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span className="text-muted" style={{ fontSize: '0.875rem' }}>Faktor Sukses</span>
-                  <span className="font-medium" style={{ fontSize: '0.875rem', textAlign: 'right' }}>
-                    {item.faktorSukses || 'Hook di 3 detik pertama sangat kuat'}
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <span className="text-muted" style={{ fontSize: '0.875rem' }}>Faktor Sukses:</span>
+                  <span className="font-medium" style={{ fontSize: '0.875rem', lineHeight: '1.4' }}>
+                    {item.faktorSukses || 'Tidak ada analisis'}
                   </span>
                 </div>
               </div>
 
-              <button 
-                className={`action-btn ${copiedId === item.id ? 'secondary' : ''}`} 
-                style={{ width: '100%', justifyContent: 'center', backgroundColor: copiedId === item.id ? 'var(--success-color)' : '', color: copiedId === item.id ? 'white' : '' }}
-                onClick={() => handleDuplicate(item.id)}
-              >
-                {copiedId === item.id ? <><FiCheck /> Berhasil Diduplikasi</> : <><FiCopy /> Gunakan Ulang Konsep</>}
-              </button>
+              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem', display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <span className="text-muted" style={{ fontSize: '0.875rem' }}>Tindakan Skalasi:</span>
+                  <span className="badge badge-warning">{item.skalaTindakan || 'Scale Up Budget'}</span>
+                </div>
+                <button 
+                  className={`action-btn ${copiedId === item.id ? 'secondary' : ''}`} 
+                  style={{ width: '100%', justifyContent: 'center', backgroundColor: copiedId === item.id ? 'var(--success-color)' : '', color: copiedId === item.id ? 'white' : '' }}
+                  onClick={() => handleDuplicate(item.id)}
+                >
+                  {copiedId === item.id ? <><FiCheck /> Berhasil Diduplikasi</> : <><FiCopy /> Duplikat Konten Ini</>}
+                </button>
+              </div>
             </div>
           ))
         )}

@@ -7,9 +7,13 @@ export default async function handler(req, res) {
       const formatted = data.map(row => ({
         id: row.id,
         title: row.title,
+        adId: row.ad_id,
         ctr: row.ctr,
         transactions: row.transactions,
-        faktorSukses: row.faktor_sukses
+        budgetSpent: row.budget_spent,
+        roas: row.roas,
+        faktorSukses: row.faktor_sukses,
+        skalaTindakan: row.skala_tindakan
       }));
       return res.status(200).json(formatted);
     } catch (error) {
@@ -19,19 +23,23 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const { title, ctr, transactions, faktorSukses } = req.body;
+      const { title, adId, ctr, transactions, budgetSpent, roas, faktorSukses, skalaTindakan } = req.body;
       const result = await sql`
-        INSERT INTO winning_contents (title, ctr, transactions, faktor_sukses)
-        VALUES (${title}, ${ctr}, ${transactions}, ${faktorSukses})
+        INSERT INTO winning_contents (title, ad_id, ctr, transactions, budget_spent, roas, faktor_sukses, skala_tindakan)
+        VALUES (${title}, ${adId}, ${ctr}, ${transactions}, ${budgetSpent || 0}, ${roas || 0}, ${faktorSukses}, ${skalaTindakan || 'Scale Up Budget'})
         RETURNING *
       `;
       const row = result[0];
       return res.status(201).json({
         id: row.id,
         title: row.title,
+        adId: row.ad_id,
         ctr: row.ctr,
         transactions: row.transactions,
-        faktorSukses: row.faktor_sukses
+        budgetSpent: row.budget_spent,
+        roas: row.roas,
+        faktorSukses: row.faktor_sukses,
+        skalaTindakan: row.skala_tindakan
       });
     } catch (error) {
       return res.status(500).json({ error: error.message });

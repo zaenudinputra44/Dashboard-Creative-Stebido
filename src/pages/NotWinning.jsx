@@ -8,8 +8,13 @@ const NotWinning = () => {
 
   // State form
   const [newTitle, setNewTitle] = useState('');
+  const [newAdId, setNewAdId] = useState('');
   const [newCtr, setNewCtr] = useState('');
   const [newCvr, setNewCvr] = useState('');
+  const [newBudget, setNewBudget] = useState('');
+  const [newCpc, setNewCpc] = useState('');
+  const [newCpa, setNewCpa] = useState('');
+  const [newRoas, setNewRoas] = useState('');
   const [newIssue, setNewIssue] = useState('');
 
   useEffect(() => {
@@ -66,8 +71,13 @@ const NotWinning = () => {
     try {
       const payload = {
         title: newTitle,
+        adId: newAdId,
         ctr: newCtr || '0.00',
         conversionRate: newCvr || '0.00',
+        budgetSpent: newBudget || '0',
+        cpc: newCpc || '0.00',
+        cpa: newCpa || '0.00',
+        roas: newRoas || '0.00',
         indikasiMasalah: newIssue || 'Perlu dianalisis',
         decision: 'Belum Ditentukan'
       };
@@ -83,8 +93,13 @@ const NotWinning = () => {
       
       setData([newItem, ...data]);
       setNewTitle('');
+      setNewAdId('');
       setNewCtr('');
       setNewCvr('');
+      setNewBudget('');
+      setNewCpc('');
+      setNewCpa('');
+      setNewRoas('');
       setNewIssue('');
     } catch (err) {
       console.warn('Mode Lokal: Menyimpan ke localStorage');
@@ -92,8 +107,13 @@ const NotWinning = () => {
       const newItem = {
         id: newId,
         title: newTitle + ' (Local)',
+        adId: newAdId,
         ctr: newCtr || '0.00',
         conversionRate: newCvr || '0.00',
+        budgetSpent: newBudget || '0',
+        cpc: newCpc || '0.00',
+        cpa: newCpa || '0.00',
+        roas: newRoas || '0.00',
         indikasiMasalah: newIssue || 'Perlu dianalisis',
         decision: 'Belum Ditentukan'
       };
@@ -103,8 +123,13 @@ const NotWinning = () => {
       localStorage.setItem('notWinningData', JSON.stringify(updatedData));
 
       setNewTitle('');
+      setNewAdId('');
       setNewCtr('');
       setNewCvr('');
+      setNewBudget('');
+      setNewCpc('');
+      setNewCpa('');
+      setNewRoas('');
       setNewIssue('');
     }
   };
@@ -125,13 +150,33 @@ const NotWinning = () => {
             <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Judul Konten</label>
             <input type="text" className="filter-input" style={{ width: '100%' }} value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Masukkan judul..." required />
           </div>
+          <div style={{ flex: '1 1 150px' }}>
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Ad ID / Campaign ID</label>
+            <input type="text" className="filter-input" style={{ width: '100%' }} value={newAdId} onChange={(e) => setNewAdId(e.target.value)} placeholder="Opsional" />
+          </div>
+          <div style={{ flex: '1 1 100px' }}>
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Budget Spent (Rp)</label>
+            <input type="number" className="filter-input" style={{ width: '100%' }} value={newBudget} onChange={(e) => setNewBudget(e.target.value)} placeholder="0" />
+          </div>
           <div style={{ flex: '1 1 100px' }}>
             <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>CTR (%)</label>
-            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newCtr} onChange={(e) => setNewCtr(e.target.value)} placeholder="Contoh: 0.50" />
+            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newCtr} onChange={(e) => setNewCtr(e.target.value)} placeholder="0.50" />
           </div>
           <div style={{ flex: '1 1 100px' }}>
             <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>CVR (%)</label>
-            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newCvr} onChange={(e) => setNewCvr(e.target.value)} placeholder="Contoh: 1.20" />
+            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newCvr} onChange={(e) => setNewCvr(e.target.value)} placeholder="1.20" />
+          </div>
+          <div style={{ flex: '1 1 100px' }}>
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>CPC (Rp)</label>
+            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newCpc} onChange={(e) => setNewCpc(e.target.value)} placeholder="0.00" />
+          </div>
+          <div style={{ flex: '1 1 100px' }}>
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>CPA (Rp)</label>
+            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newCpa} onChange={(e) => setNewCpa(e.target.value)} placeholder="0.00" />
+          </div>
+          <div style={{ flex: '1 1 100px' }}>
+            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>ROAS</label>
+            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newRoas} onChange={(e) => setNewRoas(e.target.value)} placeholder="0.50" />
           </div>
           <div style={{ flex: '1 1 250px' }}>
             <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Indikasi Masalah</label>
@@ -147,8 +192,9 @@ const NotWinning = () => {
         <table className="data-table">
           <thead>
             <tr>
-              <th>Konten</th>
-              <th>Metrik Rendah</th>
+              <th>Konten & Ad ID</th>
+              <th>Metrik Performa</th>
+              <th>Metrik Kerugian (Spend/CPA/CPC/ROAS)</th>
               <th>Indikasi Masalah</th>
               <th>Rekomendasi Tindakan</th>
               <th>Aksi</th>
@@ -157,18 +203,29 @@ const NotWinning = () => {
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }} className="text-muted">
+                <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }} className="text-muted">
                   Belum ada evaluasi konten tidak winning.
                 </td>
               </tr>
             ) : (
               data.map((item) => (
                 <tr key={item.id}>
-                  <td className="font-medium">{item.title}</td>
+                  <td>
+                    <div className="font-medium">{item.title}</div>
+                    {item.adId && <div className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>Ad ID: {item.adId}</div>}
+                  </td>
                   <td>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                       <span className="badge badge-danger">CTR: {item.ctr}%</span>
                       <span className="badge badge-warning">CVR: {item.conversionRate}%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem' }}>
+                      <div><strong>Spend:</strong> Rp {parseInt(item.budgetSpent || 0).toLocaleString('id-ID')}</div>
+                      <div><strong>CPA:</strong> Rp {parseFloat(item.cpa || 0).toLocaleString('id-ID')}</div>
+                      <div><strong>CPC:</strong> Rp {parseFloat(item.cpc || 0).toLocaleString('id-ID')}</div>
+                      <div><strong>ROAS:</strong> {item.roas}x</div>
                     </div>
                   </td>
                   <td>
