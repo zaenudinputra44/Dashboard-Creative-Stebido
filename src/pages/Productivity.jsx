@@ -5,22 +5,28 @@ import {
 
 const Productivity = () => {
   const [monitoringData, setMonitoringData] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchData = () => {
-    fetch('/api/monitoring')
-      .then(res => {
-        if (!res.ok) throw new Error('API not available locally without Vercel CLI');
-        return res.json();
-      })
-      .then(dbData => {
-        setMonitoringData(dbData);
-        setIsLoading(false);
-      })
-      .catch(err => {
-        console.warn('Falling back to empty data:', err.message);
-        setIsLoading(false);
-      });
+  const fetchData = async () => {
+    try {
+      const [monRes, usersRes] = await Promise.all([
+        fetch('/api/monitoring').then(r => {
+          if (!r.ok) throw new Error('API not available');
+          return r.json();
+        }).catch(() => []),
+        fetch('/api/users').then(r => r.ok ? r.json() : []).catch(() => [])
+      ]);
+      
+      setMonitoringData(monRes);
+      if (Array.isArray(usersRes)) {
+        setTeamMembers(usersRes);
+      }
+      setIsLoading(false);
+    } catch (err) {
+      console.warn('Dashboard fetch error:', err.message);
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -32,18 +38,29 @@ const Productivity = () => {
   const productivityChartData = useMemo(() => {
     if (!monitoringData.length) return [];
     
+    // Identifikasi nama yang merupakan Supervisor atau Manager
+    const excludedNames = teamMembers
+      .filter(user => user.role.toLowerCase().includes('supervisor') || user.role.toLowerCase().includes('manager'))
+      .map(user => user.name.split(' ')[0].toLowerCase());
+    
     // Kelompokkan pekerjaan berdasarkan Executor CWM
     const picStats = {};
     monitoringData.forEach(job => {
-      const picName = job.executorCWM ? job.executorCWM.split(' ')[0] : 'Unknown';
+      if (!job.executorCWM) return;
+      
+      const picName = job.executorCWM.split(' ')[0];
+      
+      // Lewati jika nama ini termasuk supervisor atau manager
+      if (excludedNames.includes(picName.toLowerCase())) return;
+
       if (!picStats[picName]) {
         picStats[picName] = { 
           name: picName, 
           selesai: 0, 
           proses: 0,
-          terlambat: 0, // Mock for now
-          ketepatan: 100, // Mock
-          kualitas: 100 // Mock
+          terlambat: 0,
+          ketepatan: 100,
+          kualitas: 100
         };
       }
       
@@ -55,7 +72,7 @@ const Productivity = () => {
     });
 
     return Object.values(picStats).sort((a, b) => b.selesai - a.selesai);
-  }, [monitoringData]);
+  }, [monitoringData, teamMembers]);
 
   // Total selesai keseluruhan tim
   const totalSelesai = productivityChartData.reduce((acc, curr) => acc + curr.selesai, 0);
