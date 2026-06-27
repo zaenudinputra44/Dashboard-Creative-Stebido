@@ -198,6 +198,9 @@ const Monitoring = () => {
     }
   };
 
+  const executorOptions = teamMembers.filter(u => !u.role || u.role.toLowerCase().includes('cwm') || u.role.toLowerCase().includes('content'));
+  const picOptions = teamMembers.filter(u => !u.role || u.role.toLowerCase().includes('adv') || u.role.toLowerCase().includes('skripter'));
+
   return (
     <div className="page-container" style={{ position: 'relative' }}>
       <div className="flex-between mb-4">
@@ -237,7 +240,7 @@ const Monitoring = () => {
           onChange={(e) => setFilterExecutor(e.target.value)}
         >
           <option value="All">Semua Executor CWM</option>
-          {teamMembers.map(user => (
+          {executorOptions.map(user => (
             <option key={`filter-exec-${user.id || user.name}`} value={user.name}>{user.name}</option>
           ))}
         </select>
@@ -249,7 +252,7 @@ const Monitoring = () => {
           onChange={(e) => setFilterPic(e.target.value)}
         >
           <option value="All">Semua PIC Konten</option>
-          {teamMembers.map(user => (
+          {picOptions.map(user => (
             <option key={`filter-pic-${user.id || user.name}`} value={user.name}>{user.name}</option>
           ))}
         </select>
@@ -309,10 +312,10 @@ const Monitoring = () => {
                     style={{ padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px', cursor: 'pointer' }}
                   >
                     <option value="" disabled>-- Pilih --</option>
-                    {teamMembers.map(user => (
+                    {executorOptions.map(user => (
                       <option key={`inline-exec-${user.id || user.name}`} value={user.name}>{user.name}</option>
                     ))}
-                    {item.executorCWM && !teamMembers.some(u => u.name === item.executorCWM) && (
+                    {item.executorCWM && !executorOptions.some(u => u.name === item.executorCWM) && (
                       <option value={item.executorCWM}>{item.executorCWM}</option>
                     )}
                   </select>
@@ -324,10 +327,10 @@ const Monitoring = () => {
                     style={{ padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px', cursor: 'pointer' }}
                   >
                     <option value="" disabled>-- Pilih --</option>
-                    {teamMembers.map(user => (
+                    {picOptions.map(user => (
                       <option key={`inline-pic-${user.id || user.name}`} value={user.name}>{user.name}</option>
                     ))}
-                    {item.picKonten && !teamMembers.some(u => u.name === item.picKonten) && (
+                    {item.picKonten && !picOptions.some(u => u.name === item.picKonten) && (
                       <option value={item.picKonten}>{item.picKonten}</option>
                     )}
                   </select>
@@ -430,10 +433,10 @@ const Monitoring = () => {
                     style={{ cursor: 'pointer', appearance: 'auto' }}
                   >
                     <option value="" disabled>-- Pilih Executor CWM --</option>
-                    {teamMembers.map(user => (
+                    {executorOptions.map(user => (
                       <option key={`exec-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
                     ))}
-                    {formData.executorCWM && !teamMembers.some(u => u.name === formData.executorCWM) && (
+                    {formData.executorCWM && !executorOptions.some(u => u.name === formData.executorCWM) && (
                       <option value={formData.executorCWM}>{formData.executorCWM} (Data Lama)</option>
                     )}
                   </select>
@@ -449,10 +452,10 @@ const Monitoring = () => {
                     style={{ cursor: 'pointer', appearance: 'auto' }}
                   >
                     <option value="" disabled>-- Pilih PIC Konten --</option>
-                    {teamMembers.map(user => (
+                    {picOptions.map(user => (
                       <option key={`pic-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
                     ))}
-                    {formData.picKonten && !teamMembers.some(u => u.name === formData.picKonten) && (
+                    {formData.picKonten && !picOptions.some(u => u.name === formData.picKonten) && (
                       <option value={formData.picKonten}>{formData.picKonten} (Data Lama)</option>
                     )}
                   </select>
