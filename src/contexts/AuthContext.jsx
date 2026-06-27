@@ -18,26 +18,33 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = (username, password) => {
-    // Simulate API call
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const user = teamData.find(u => u.username === username && u.password === password);
-        if (user) {
-          const userSession = {
-            id: user.id,
-            name: user.name,
-            role: user.role,
-            username: user.username
-          };
-          setCurrentUser(userSession);
-          localStorage.setItem('dashboardUser', JSON.stringify(userSession));
-          resolve(userSession);
-        } else {
-          reject(new Error('Username atau password salah!'));
-        }
-      }, 500); // 500ms artificial delay for realism
-    });
+  const login = async (username, password) => {
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', username, password })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Terjadi kesalahan saat login.');
+      }
+      
+      const userSession = {
+        id: data.id,
+        name: data.name,
+        role: data.role,
+        username: data.username
+      };
+      
+      setCurrentUser(userSession);
+      localStorage.setItem('dashboardUser', JSON.stringify(userSession));
+      return userSession;
+    } catch (err) {
+      throw err;
+    }
   };
 
   const logout = () => {

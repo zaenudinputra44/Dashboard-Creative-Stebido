@@ -9,6 +9,19 @@ export default async function handler(req, res) {
   try {
     // 1. Create Tables
     await sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        role VARCHAR(100) NOT NULL,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        email VARCHAR(255),
+        reset_token VARCHAR(255),
+        reset_expires TIMESTAMP
+      );
+    `;
+
+    await sql`
       CREATE TABLE IF NOT EXISTS monitoring_pekerjaan (
         id SERIAL PRIMARY KEY,
         week VARCHAR(50),
@@ -100,11 +113,20 @@ export default async function handler(req, res) {
     `;
 
     // 2. Clear existing data (optional, but good for fresh migration)
+    await sql`TRUNCATE TABLE users RESTART IDENTITY CASCADE`;
     await sql`TRUNCATE TABLE monitoring_pekerjaan RESTART IDENTITY CASCADE`;
     await sql`TRUNCATE TABLE technical_issues RESTART IDENTITY CASCADE`;
     await sql`TRUNCATE TABLE evaluations RESTART IDENTITY CASCADE`;
 
-    // 3. Seed Monitoring Data
+    // 3. Seed Users Data
+    for (const user of teamData) {
+      await sql`
+        INSERT INTO users (name, role, username, password, email)
+        VALUES (${user.name}, ${user.role}, ${user.username}, ${user.password}, ${user.username + '@creativestebido.local'})
+      `;
+    }
+
+    // 4. Seed Monitoring Data
     for (const item of monitoringData) {
       await sql`
         INSERT INTO monitoring_pekerjaan 
