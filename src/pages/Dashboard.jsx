@@ -98,14 +98,6 @@ const Dashboard = () => {
           trendValue="0%" 
           colorClass="text-warning" 
         />
-        <KPICard 
-          title="Pekerjaan Terlambat" 
-          value={0} // To be implemented later when deadline feature is added
-          icon={<FiAlertTriangle size={24} />} 
-          trend="down" 
-          trendValue="5%" 
-          colorClass="text-danger" 
-        />
       </div>
 
       <div className="dashboard-main-grid">

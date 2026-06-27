@@ -102,10 +102,6 @@ const Settings = () => {
               <input type="checkbox" defaultChecked />
             </div>
             <div className="flex-between">
-              <span>Notifikasi Pekerjaan Terlambat</span>
-              <input type="checkbox" defaultChecked />
-            </div>
-            <div className="flex-between">
               <span>Notifikasi Kendala Belum Selesai</span>
               <input type="checkbox" defaultChecked />
             </div>
