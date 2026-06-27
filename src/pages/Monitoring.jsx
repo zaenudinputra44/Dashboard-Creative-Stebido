@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { monitoringData as initialData } from '../data/dummyData';
+import { monitoringData as initialData, teamData } from '../data/dummyData';
 import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiExternalLink, FiX } from 'react-icons/fi';
 import '../tables.css';
 
@@ -7,7 +7,7 @@ const Monitoring = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [teamMembers, setTeamMembers] = useState([]);
+  const [teamMembers, setTeamMembers] = useState(teamData); // Default fallback
 
   const fetchData = () => {
     fetch('/api/monitoring')
@@ -30,7 +30,7 @@ const Monitoring = () => {
     fetch('/api/users')
       .then(res => res.ok ? res.json() : [])
       .then(users => {
-        if (Array.isArray(users)) {
+        if (Array.isArray(users) && users.length > 0) {
           setTeamMembers(users);
         }
       })
@@ -348,23 +348,37 @@ const Monitoring = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label>Executor CWM</label>
-                  <select name="executorCWM" value={formData.executorCWM} onChange={handleInputChange} required className="login-input">
-                    <option value="" disabled>Pilih Executor CWM...</option>
-                    {teamMembers.map(user => (
-                      <option key={`exec-${user.id}`} value={user.name}>{user.name} ({user.role})</option>
-                    ))}
-                    <option value="Lainnya">Lainnya...</option>
-                  </select>
+                  {formData.executorCWM === 'Lainnya' ? (
+                    <input type="text" name="executorCWM" value="" onChange={(e) => setFormData(prev => ({...prev, executorCWM: e.target.value}))} required className="login-input" placeholder="Ketik nama Executor..." autoFocus />
+                  ) : (
+                    <select name="executorCWM" value={formData.executorCWM} onChange={handleInputChange} required className="login-input">
+                      <option value="" disabled>Pilih Executor CWM...</option>
+                      {teamMembers.map(user => (
+                        <option key={`exec-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
+                      ))}
+                      {formData.executorCWM && !teamMembers.some(u => u.name === formData.executorCWM) && formData.executorCWM !== 'Lainnya' && (
+                        <option value={formData.executorCWM}>{formData.executorCWM} (Custom)</option>
+                      )}
+                      <option value="Lainnya">Lainnya (Ketik Manual)...</option>
+                    </select>
+                  )}
                 </div>
                 <div className="form-group">
                   <label>PIC Konten (Adv/Skripter)</label>
-                  <select name="picKonten" value={formData.picKonten} onChange={handleInputChange} required className="login-input">
-                    <option value="" disabled>Pilih PIC Konten...</option>
-                    {teamMembers.map(user => (
-                      <option key={`pic-${user.id}`} value={user.name}>{user.name} ({user.role})</option>
-                    ))}
-                    <option value="Lainnya">Lainnya...</option>
-                  </select>
+                  {formData.picKonten === 'Lainnya' ? (
+                    <input type="text" name="picKonten" value="" onChange={(e) => setFormData(prev => ({...prev, picKonten: e.target.value}))} required className="login-input" placeholder="Ketik nama PIC..." autoFocus />
+                  ) : (
+                    <select name="picKonten" value={formData.picKonten} onChange={handleInputChange} required className="login-input">
+                      <option value="" disabled>Pilih PIC Konten...</option>
+                      {teamMembers.map(user => (
+                        <option key={`pic-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
+                      ))}
+                      {formData.picKonten && !teamMembers.some(u => u.name === formData.picKonten) && formData.picKonten !== 'Lainnya' && (
+                        <option value={formData.picKonten}>{formData.picKonten} (Custom)</option>
+                      )}
+                      <option value="Lainnya">Lainnya (Ketik Manual)...</option>
+                    </select>
+                  )}
                 </div>
               </div>
 
