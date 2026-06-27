@@ -57,7 +57,7 @@ const Dashboard = () => {
   const picStats = {};
   monitoringData.forEach(job => {
     if (job.status === 'Selesai') {
-      const pic = job.picKonten ? job.picKonten.split(' ')[0] : 'Unknown';
+      const pic = job.executorCWM ? job.executorCWM.split(' ')[0] : 'Unknown';
       picStats[pic] = (picStats[pic] || 0) + 1;
     }
   });

@@ -32,10 +32,10 @@ const Productivity = () => {
   const productivityChartData = useMemo(() => {
     if (!monitoringData.length) return [];
     
-    // Kelompokkan pekerjaan berdasarkan PIC
+    // Kelompokkan pekerjaan berdasarkan Executor CWM
     const picStats = {};
     monitoringData.forEach(job => {
-      const picName = job.picKonten ? job.picKonten.split(' ')[0] : 'Unknown';
+      const picName = job.executorCWM ? job.executorCWM.split(' ')[0] : 'Unknown';
       if (!picStats[picName]) {
         picStats[picName] = { 
           name: picName, 
