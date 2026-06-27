@@ -45,6 +45,8 @@ const Monitoring = () => {
   }, []);
 
   const [filterWeek, setFilterWeek] = useState('All');
+  const [filterExecutor, setFilterExecutor] = useState('All');
+  const [filterPic, setFilterPic] = useState('All');
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,7 +72,9 @@ const Monitoring = () => {
                           item.executorCWM.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           item.produk.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesWeek = filterWeek === 'All' || item.week.includes(filterWeek);
-    return matchesSearch && matchesWeek;
+    const matchesExecutor = filterExecutor === 'All' || item.executorCWM === filterExecutor;
+    const matchesPic = filterPic === 'All' || item.picKonten === filterPic;
+    return matchesSearch && matchesWeek && matchesExecutor && matchesPic;
   });
 
   const handleOpenModal = (item = null) => {
@@ -137,8 +141,7 @@ const Monitoring = () => {
       if (editingItem) {
         setData(prev => prev.map(item => item.id === editingItem.id ? { ...formData, id: item.id } : item));
       } else {
-        const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
-        setData(prev => [{ ...formData, id: newId }, ...prev]);
+        setData(prev => [{ ...formData, id: Date.now() }, ...prev]);
       }
     }
     handleCloseModal();
@@ -173,7 +176,7 @@ const Monitoring = () => {
       });
       if (!res.ok) throw new Error('Gagal update status');
     } catch (err) {
-      console.error('Mode Lokal: Gagal menyimpan status ke server.', err);
+      console.warn('Fallback lokal update status', err);
     }
   };
 
@@ -186,8 +189,8 @@ const Monitoring = () => {
         </button>
       </div>
 
-      <div className="filters-bar">
-        <div className="search-box">
+      <div className="filters-bar" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <div className="search-box" style={{ flex: '1' }}>
           <FiSearch className="search-icon" />
           <input 
             type="text" 
@@ -207,6 +210,30 @@ const Monitoring = () => {
           <option value="Week 2">Week 2 (8-14)</option>
           <option value="Week 3">Week 3 (15-21)</option>
           <option value="Week 4">Week 4 (22-31)</option>
+        </select>
+        
+        {/* Dropdown Filter Executor CWM */}
+        <select 
+          className="filter-input"
+          value={filterExecutor}
+          onChange={(e) => setFilterExecutor(e.target.value)}
+        >
+          <option value="All">Semua Executor CWM</option>
+          {teamMembers.map(user => (
+            <option key={`filter-exec-${user.id || user.name}`} value={user.name}>{user.name}</option>
+          ))}
+        </select>
+
+        {/* Dropdown Filter PIC Konten */}
+        <select 
+          className="filter-input"
+          value={filterPic}
+          onChange={(e) => setFilterPic(e.target.value)}
+        >
+          <option value="All">Semua PIC Konten</option>
+          {teamMembers.map(user => (
+            <option key={`filter-pic-${user.id || user.name}`} value={user.name}>{user.name}</option>
+          ))}
         </select>
       </div>
 
