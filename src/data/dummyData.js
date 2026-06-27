@@ -8,7 +8,9 @@ export const teamData = [
   { id: 7, name: "Brili", role: "Skripter", username: "skripter2", password: "123" },
   { id: 8, name: "Sani", role: "Staff Content Web Marketing", username: "staffcwm1", password: "123" },
   { id: 9, name: "Ujank", role: "Staff Content Web Marketing", username: "staffcwm2", password: "123" },
-  { id: 10, name: "Abing", role: "Staff Content Web Marketing", username: "staffcwm3", password: "123" }
+  { id: 10, name: "Abing", role: "Staff Content Web Marketing", username: "staffcwm3", password: "123" },
+  { id: 11, name: "Kukuh", role: "Advertiser", username: "kukuh", password: "123" },
+  { id: 12, name: "Maknun", role: "Advertiser", username: "maknun", password: "123" }
 ];
 
 export const kpiData = {
