@@ -30,6 +30,52 @@ const Performance = () => {
     biayaLandas: ''
   });
 
+  // Helper fungsi untuk fitur otomatis
+  const parseNumber = (val) => {
+    if (!val) return 0;
+    let clean = String(val).replace(/Rp\s?/ig, '').replace(/\./g, '').replace(/,/g, '.').replace(/%/g, '').trim();
+    const num = parseFloat(clean);
+    return isNaN(num) ? 0 : num;
+  };
+
+  const formatRp = (num) => {
+    if (!num || !isFinite(num)) return '';
+    return 'Rp ' + Math.round(num).toLocaleString('id-ID');
+  };
+
+  const formatPercent = (num) => {
+    if (!num || !isFinite(num)) return '';
+    return (num * 100).toFixed(2).replace('.', ',') + '%';
+  };
+
+  // Fitur Kalkulasi Otomatis
+  useEffect(() => {
+    if (!isModalOpen) return;
+    
+    const budget = parseNumber(formData.budget);
+    const kontak = parseNumber(formData.kontak);
+    const closing = parseNumber(formData.closing);
+    const klikTautan = parseNumber(formData.klikTautan);
+    const tayanganLandas = parseNumber(formData.tayanganLandas);
+
+    setFormData(prev => {
+      const updates = {};
+      
+      if (budget > 0 && kontak > 0) updates.biayaKontak = formatRp(budget / kontak);
+      if (budget > 0 && closing > 0) updates.cac = formatRp(budget / closing);
+      if (budget > 0 && klikTautan > 0) updates.cpc = formatRp(budget / klikTautan);
+      if (klikTautan > 0 && tayanganLandas > 0) updates.rasioLandas = formatPercent(tayanganLandas / klikTautan);
+      if (budget > 0 && tayanganLandas > 0) updates.biayaLandas = formatRp(budget / tayanganLandas);
+      
+      let hasChanges = false;
+      Object.keys(updates).forEach(k => {
+        if (updates[k] !== prev[k]) hasChanges = true;
+      });
+      
+      return hasChanges ? { ...prev, ...updates } : prev;
+    });
+  }, [formData.budget, formData.kontak, formData.closing, formData.klikTautan, formData.tayanganLandas, isModalOpen]);
+
   // Load dari API Vercel / Neon DB
   const fetchData = () => {
     fetch('/api/performance')
@@ -348,7 +394,7 @@ const Performance = () => {
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>CAC</label>
-                  <input type="text" name="cac" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.cac} onChange={handleInputChange} placeholder="Contoh: 61,84%" />
+                  <input type="text" name="cac" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.cac} onChange={handleInputChange} placeholder="Contoh: Rp 225.555" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>CPM</label>
