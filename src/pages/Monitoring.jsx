@@ -393,14 +393,14 @@ const Monitoring = () => {
 
       {/* Modal Form */}
       {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay" style={{ padding: '1rem' }}>
+          <div className="modal-content" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             <div className="modal-header">
               <h3>{editingItem ? "Edit Pekerjaan" : "Tambah Data Pekerjaan"}</h3>
               <button className="modal-close" onClick={handleCloseModal}><FiX size={24} /></button>
             </div>
             
-            <form onSubmit={handleSave} className="modal-form">
+            <form onSubmit={handleSave} className="modal-form" style={{ overflowY: 'auto' }}>
               <div className="form-row">
                 <div className="form-group">
                   <label>Week</label>
