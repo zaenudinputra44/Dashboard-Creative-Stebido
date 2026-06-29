@@ -118,14 +118,6 @@ const Dashboard = () => {
           trendValue="0%" 
           colorClass="text-warning" 
         />
-        <KPICard 
-          title="Rata-Rata ROAS Iklan" 
-          value={`${avgRoas}x`}
-          icon={<FiDollarSign size={24} />} 
-          trend="up" 
-          trendValue="Dynamic" 
-          colorClass="text-success" 
-        />
       </div>
 
       <div className="dashboard-main-grid">
