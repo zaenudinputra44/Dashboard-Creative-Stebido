@@ -201,9 +201,26 @@ const Dashboard = () => {
                   <div className="item-content">
                     <p className="item-title">{evalItem.week}</p>
                     <ul style={{ paddingLeft: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                      {(evalItem.notes || []).slice(0, 2).map((note, idx) => (
-                        <li key={idx} style={{ marginBottom: '2px' }}>{note}</li>
-                      ))}
+                      {(() => {
+                        let notesArray = [];
+                        try {
+                          notesArray = Array.isArray(evalItem.notes) 
+                            ? evalItem.notes 
+                            : (typeof evalItem.notes === 'string' ? JSON.parse(evalItem.notes) : []);
+                        } catch (e) {
+                          notesArray = evalItem.notes ? [evalItem.notes] : [];
+                        }
+                        return notesArray.slice(0, 2).map((note, idx) => {
+                          const isObject = typeof note === 'object' && note !== null;
+                          const text = isObject ? note.text : note;
+                          const isChecked = isObject ? note.checked : false;
+                          return (
+                            <li key={idx} style={{ marginBottom: '2px', textDecoration: isChecked ? 'line-through' : 'none', color: isChecked ? 'var(--text-muted)' : 'inherit' }}>
+                              {text}
+                            </li>
+                          );
+                        });
+                      })()}
                     </ul>
                   </div>
                 </div>
