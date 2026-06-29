@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { monitoringData as initialData, teamData } from '../data/dummyData';
-import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiExternalLink, FiX, FiBell } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiExternalLink, FiX, FiBell, FiCheckCircle } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import '../tables.css';
 
@@ -10,6 +10,7 @@ const Monitoring = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [teamMembers, setTeamMembers] = useState(teamData); // Default fallback
+  const [notification, setNotification] = useState(null);
 
 
   const fetchData = () => {
@@ -169,6 +170,17 @@ const Monitoring = () => {
     
     // Optimistic UI update
     setData(prev => prev.map(d => d.id === item.id ? updatedItem : d));
+
+    if (field === 'status' && newValue === 'Selesai') {
+      try {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(e => console.warn('Autoplay blocked:', e));
+      } catch (e) {}
+      
+      setNotification('Pekerjaan berhasil diselesaikan! 🎉');
+      setTimeout(() => setNotification(null), 4000);
+    }
 
     try {
       const res = await fetch('/api/monitoring', {
@@ -502,6 +514,29 @@ const Monitoring = () => {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Floating Notification */}
+      {notification && (
+        <div style={{
+          position: 'fixed',
+          bottom: '30px',
+          right: '30px',
+          backgroundColor: 'var(--success-color)',
+          color: 'white',
+          padding: '1rem 1.5rem',
+          borderRadius: '8px',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          zIndex: 9999,
+          animation: 'slideInRight 0.3s ease-out',
+          borderLeft: '4px solid rgba(255,255,255,0.5)'
+        }}>
+          <FiCheckCircle size={24} />
+          <span style={{ fontWeight: 600, fontSize: '1rem' }}>{notification}</span>
         </div>
       )}
     </div>
