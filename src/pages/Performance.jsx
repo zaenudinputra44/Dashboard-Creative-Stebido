@@ -141,32 +141,6 @@ const Performance = () => {
     }
   };
 
-  const handleMakeNotWinning = async (item) => {
-    if (!window.confirm(`Jadikan "${item.title}" sebagai Konten Tidak Winning?`)) return;
-    try {
-      const payload = {
-        title: item.title,
-        adId: item.metaLink,
-        ctr: item.ctr,
-        conversionRate: item.conversionRate,
-        budgetSpent: 0,
-        cpc: 0,
-        cpa: 0,
-        roas: item.roas,
-        indikasiMasalah: 'Dipindah otomatis dari Performa Konten',
-        decision: 'Belum Ditentukan'
-      };
-      await fetch('/api/not_winning', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      alert('Berhasil dipindahkan ke Konten Tidak Winning!');
-    } catch (err) {
-      alert('Gagal memindahkan data.');
-    }
-  };
-
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -353,14 +327,6 @@ const Performance = () => {
                     title="Jadikan Winning"
                   >
                     🏆
-                  </button>
-                  <button 
-                    className="action-btn"
-                    onClick={() => handleMakeNotWinning(item)}
-                    style={{ backgroundColor: 'var(--warning-color)', color: 'white', padding: '0.4rem 0.6rem', fontSize: '0.75rem', minWidth: 'auto' }}
-                    title="Jadikan Not Winning"
-                  >
-                    📉
                   </button>
                   <button 
                     className="action-btn"

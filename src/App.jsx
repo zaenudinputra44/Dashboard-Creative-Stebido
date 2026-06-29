@@ -6,7 +6,6 @@ import Monitoring from './pages/Monitoring';
 import Productivity from './pages/Productivity';
 import Performance from './pages/Performance';
 import Winning from './pages/Winning';
-import NotWinning from './pages/NotWinning';
 import Technical from './pages/Technical';
 import Evaluation from './pages/Evaluation';
 import Settings from './pages/Settings';
@@ -34,7 +33,6 @@ const Layout = ({ children, theme, toggleTheme }) => {
     { path: '/productivity', name: 'Produktivitas Tim', icon: <FiUsers /> },
     { path: '/performance', name: 'Performa Konten', icon: <FiTrendingUp /> },
     { path: '/winning', name: 'Winning Content', icon: <FiAward /> },
-    { path: '/not-winning', name: 'Konten Tidak Winning', icon: <FiAlertCircle /> },
     { path: '/technical', name: 'Kendala Teknis', icon: <FiTool /> },
     { path: '/evaluation', name: 'Evaluasi & Rekomendasi', icon: <FiCheckSquare /> },
     { path: '/settings', name: 'Pengaturan', icon: <FiSettings /> },
@@ -123,7 +121,6 @@ const AppRoutes = () => {
               <Route path="/productivity" element={<Productivity />} />
               <Route path="/performance" element={<Performance />} />
               <Route path="/winning" element={<Winning />} />
-              <Route path="/not-winning" element={<NotWinning />} />
               <Route path="/technical" element={<Technical />} />
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/settings" element={<Settings />} />
