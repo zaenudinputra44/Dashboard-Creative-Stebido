@@ -27,8 +27,11 @@ const NotificationBell = () => {
           
           const hasNew = newUnread.some(n => !prevUnreadIds.includes(n.id));
           if (hasNew && prev.length > 0) {
-            // Play sound only if it's an actual update, not the initial load
-            pingAudio.current.play().catch(e => console.warn('Audio play failed:', e));
+            // Play sound only if preference is true (default is true)
+            const soundEnabled = localStorage.getItem('pref_sound') !== 'false';
+            if (soundEnabled) {
+              pingAudio.current.play().catch(e => console.warn('Audio play failed:', e));
+            }
           }
           
           return data;
