@@ -2,11 +2,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
+import { FiDownload } from 'react-icons/fi';
 
 const Productivity = () => {
   const [monitoringData, setMonitoringData] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [accFilter, setAccFilter] = useState('harian');
 
   const fetchData = async () => {
     try {
@@ -77,6 +79,73 @@ const Productivity = () => {
   // Total selesai keseluruhan tim
   const totalSelesai = productivityChartData.reduce((acc, curr) => acc + curr.selesai, 0);
   const rataRataSelesai = productivityChartData.length > 0 ? (totalSelesai / productivityChartData.length).toFixed(1) : 0;
+
+  const accumulationData = useMemo(() => {
+    if (!monitoringData.length) return { harian: [], bulanan: [], tahunan: [] };
+    
+    const acc = { harian: {}, bulanan: {}, tahunan: {} };
+
+    monitoringData.forEach(job => {
+      if (!job.tanggalKonten) return;
+      
+      const date = new Date(job.tanggalKonten);
+      if (isNaN(date.getTime())) return;
+
+      const dayStr = job.tanggalKonten; // YYYY-MM-DD
+      const monthStr = job.tanggalKonten.substring(0, 7); // YYYY-MM
+      const yearStr = job.tanggalKonten.substring(0, 4); // YYYY
+
+      // Harian
+      if (!acc.harian[dayStr]) acc.harian[dayStr] = { period: dayStr, total: 0, selesai: 0, proses: 0 };
+      acc.harian[dayStr].total += 1;
+      if (job.status === 'Selesai') acc.harian[dayStr].selesai += 1;
+      else acc.harian[dayStr].proses += 1;
+
+      // Bulanan
+      if (!acc.bulanan[monthStr]) acc.bulanan[monthStr] = { period: monthStr, total: 0, selesai: 0, proses: 0 };
+      acc.bulanan[monthStr].total += 1;
+      if (job.status === 'Selesai') acc.bulanan[monthStr].selesai += 1;
+      else acc.bulanan[monthStr].proses += 1;
+
+      // Tahunan
+      if (!acc.tahunan[yearStr]) acc.tahunan[yearStr] = { period: yearStr, total: 0, selesai: 0, proses: 0 };
+      acc.tahunan[yearStr].total += 1;
+      if (job.status === 'Selesai') acc.tahunan[yearStr].selesai += 1;
+      else acc.tahunan[yearStr].proses += 1;
+    });
+
+    return {
+      harian: Object.values(acc.harian).sort((a,b) => b.period.localeCompare(a.period)), // Terlama di bawah
+      bulanan: Object.values(acc.bulanan).sort((a,b) => b.period.localeCompare(a.period)),
+      tahunan: Object.values(acc.tahunan).sort((a,b) => b.period.localeCompare(a.period))
+    };
+  }, [monitoringData]);
+
+  const handleExportAccumulation = () => {
+    const dataToExport = accumulationData[accFilter];
+    const headers = ["Periode", "Total Pekerjaan Masuk", "Pekerjaan Selesai", "Pekerjaan Masih Proses", "Tingkat Penyelesaian (%)"];
+    const csvRows = [
+      headers.join(","),
+      ...dataToExport.map(item => [
+        `"${item.period}"`,
+        item.total,
+        item.selesai,
+        item.proses,
+        Math.round((item.selesai / item.total) * 100)
+      ].join(","))
+    ];
+    
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Akumulasi_Pekerjaan_${accFilter}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="page-container">
@@ -154,6 +223,52 @@ const Productivity = () => {
               <tr>
                 <td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }} className="text-muted">
                   Belum ada data pekerjaan di menu Monitoring.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="card mt-4">
+        <div className="flex-between mb-4">
+          <h3 className="card-title">Akumulasi Pekerjaan Secara Keseluruhan</h3>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <select className="filter-input" value={accFilter} onChange={(e) => setAccFilter(e.target.value)} style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)', outline: 'none' }}>
+              <option value="harian">Harian (Per Hari)</option>
+              <option value="bulanan">Bulanan (Per Bulan)</option>
+              <option value="tahunan">Tahunan (Per Tahun)</option>
+            </select>
+            <button className="action-btn secondary" onClick={handleExportAccumulation}>
+              <FiDownload /> Export CSV
+            </button>
+          </div>
+        </div>
+        
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Periode ({accFilter === 'harian' ? 'Tanggal' : accFilter === 'bulanan' ? 'Bulan' : 'Tahun'})</th>
+              <th>Total Pekerjaan Masuk</th>
+              <th>Pekerjaan Selesai (✅)</th>
+              <th>Pekerjaan Masih Proses (⏳)</th>
+              <th>Tingkat Penyelesaian</th>
+            </tr>
+          </thead>
+          <tbody>
+            {accumulationData[accFilter].map((item) => (
+              <tr key={item.period}>
+                <td className="font-medium">{item.period}</td>
+                <td>{item.total}</td>
+                <td><span style={{ color: 'var(--success-color)', fontWeight: 'bold' }}>{item.selesai}</span></td>
+                <td><span style={{ color: 'var(--warning-color)', fontWeight: 'bold' }}>{item.proses}</span></td>
+                <td>{Math.round((item.selesai / item.total) * 100)}%</td>
+              </tr>
+            ))}
+            {accumulationData[accFilter].length === 0 && (
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }} className="text-muted">
+                  Belum ada data akumulasi untuk periode ini.
                 </td>
               </tr>
             )}
