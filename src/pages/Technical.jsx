@@ -184,36 +184,38 @@ const Technical = () => {
               <h3>Detail Kendala Teknis</h3>
               <button className="modal-close" onClick={() => setDetailIssue(null)}><FiX size={24} /></button>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>ID Kendala</div>
-                <div style={{ fontWeight: '500' }}>#{detailIssue.id}</div>
-              </div>
-              
-              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Status Penyelesaian</div>
-                <span className={`badge ${detailIssue.status === 'Selesai' ? 'badge-success' : 'badge-gray'}`}>
-                  {detailIssue.status}
-                </span>
-              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1.5rem', padding: '0 0.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>ID Kendala</div>
+                    <div style={{ fontWeight: '600', fontSize: '1.1rem', color: 'var(--primary-color)' }}>#{detailIssue.id}</div>
+                  </div>
+                  
+                  <div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Status</div>
+                    <span className={`badge ${detailIssue.status === 'Selesai' ? 'badge-success' : 'badge-gray'}`}>
+                      {detailIssue.status}
+                    </span>
+                  </div>
 
-              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Tingkat Keparahan</div>
-                <span className={`badge ${detailIssue.severity === 'Kritis' ? 'badge-danger' : detailIssue.severity === 'Tinggi' ? 'badge-warning' : detailIssue.severity === 'Sedang' ? 'badge-info' : 'badge-gray'}`}>
-                  {detailIssue.severity}
-                </span>
-              </div>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Keparahan</div>
+                    <span className={`badge ${detailIssue.severity === 'Kritis' ? 'badge-danger' : detailIssue.severity === 'Tinggi' ? 'badge-warning' : detailIssue.severity === 'Sedang' ? 'badge-info' : 'badge-gray'}`}>
+                      {detailIssue.severity}
+                    </span>
+                  </div>
+                </div>
 
-              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Rincian Kendala</div>
-                <div style={{ lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-wrap' }}>
-                  {detailIssue.issue}
+                <div style={{ backgroundColor: '#f9fafb', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.75rem', fontWeight: '500' }}>Rincian Kendala Teknis</div>
+                  <div style={{ lineHeight: '1.7', color: 'var(--text-main)', whiteSpace: 'pre-wrap', fontSize: '0.95rem' }}>
+                    {detailIssue.issue}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="modal-actions mt-4">
-              <button className="login-button mt-0" style={{ width: '100%', marginTop: '1rem' }} onClick={() => setDetailIssue(null)}>Tutup</button>
-            </div>
+              <div className="modal-actions" style={{ marginTop: '2rem' }}>
+                <button className="action-btn secondary" style={{ width: '100%', justifyContent: 'center', padding: '0.75rem' }} onClick={() => setDetailIssue(null)}>Tutup Detail</button>
+              </div>
           </div>
         </div>
       )}
