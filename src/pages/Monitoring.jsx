@@ -180,6 +180,19 @@ const Monitoring = () => {
       
       setNotification('Pekerjaan berhasil diselesaikan! 🎉');
       setTimeout(() => setNotification(null), 4000);
+      
+      // Sinkronisasi notifikasi ke semua user
+      try {
+        fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            notifyAll: true,
+            title: 'Tugas Selesai 🚀',
+            message: `Tugas "${item.judulKonten || item.produk}" telah diselesaikan oleh ${currentUser?.name || 'Anggota Tim'}.`
+          })
+        });
+      } catch(e) {}
     }
 
     try {
