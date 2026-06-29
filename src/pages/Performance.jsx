@@ -179,16 +179,23 @@ const Performance = () => {
   const handleMakeWinning = async (item) => {
     if (!window.confirm(`Jadikan "${item.title}" sebagai Winning Content?`)) return;
     
-    // Sinkronisasi data dari Performa ke Winning
+    // Sinkronisasi seluruh data dari Performa ke Winning
     const payload = {
       title: item.title,
       adId: item.metaLink || '-',
-      ctr: (item.ctrManual || '0').replace('%', ''), // Menghilangkan persen untuk disimpan
-      transactions: item.closing || '0',
-      budgetSpent: item.budget ? item.budget.replace(/\D/g, '') : 0, // Ambil angka murninya
-      roas: item.roas || '0',
-      faktorSukses: 'Dipindah otomatis dari Performa Konten',
-      skalaTindakan: 'Scale Up Budget'
+      ctr: item.ctrManual || '-',
+      transactions: item.closing || '-',
+      budgetSpent: item.budget || '-', 
+      roas: item.roas || '-',
+      kontak: item.kontak || '-',
+      biayaKontak: item.biayaKontak || '-',
+      cac: item.cac || '-',
+      cpm: item.cpm || '-',
+      cpc: item.cpc || '-',
+      klikTautan: item.klikTautan || '-',
+      tayanganLandas: item.tayanganLandas || '-',
+      rasioLandas: item.rasioLandas || '-',
+      biayaLandas: item.biayaLandas || '-'
     };
 
     try {

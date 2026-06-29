@@ -79,23 +79,20 @@ const Winning = () => {
               )}
               
               <div style={{ marginBottom: '1.5rem', flex: 1 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem', backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: '8px' }}>
-                  <div>
-                    <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BUDGET SPENT</div>
-                    <div className="font-medium">Rp {parseInt(item.budgetSpent || 0).toLocaleString('id-ID')}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>ROAS</div>
-                    <div className="font-medium" style={{ color: 'var(--success-color)' }}>{item.roas}x</div>
-                  </div>
-                  <div>
-                    <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CTR</div>
-                    <div className="font-medium" style={{ color: 'var(--primary-color)' }}>{item.ctr}%</div>
-                  </div>
-                  <div>
-                    <div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>SALES</div>
-                    <div className="font-medium">{item.transactions}</div>
-                  </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: '8px' }}>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BUDGET</div><div className="font-medium">{item.budgetSpent || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CLOSING</div><div className="font-medium">{item.transactions || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>ROAS</div><div className="font-medium" style={{ color: 'var(--success-color)' }}>{item.roas || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CTR</div><div className="font-medium" style={{ color: 'var(--primary-color)' }}>{item.ctr || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>KONTAK</div><div className="font-medium">{item.kontak || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BIAYA KONTAK</div><div className="font-medium">{item.biayaKontak || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CAC</div><div className="font-medium">{item.cac || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CPM</div><div className="font-medium">{item.cpm || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CPC</div><div className="font-medium">{item.cpc || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>KLIK TAUTAN</div><div className="font-medium">{item.klikTautan || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>TAYANGAN LANDAS</div><div className="font-medium">{item.tayanganLandas || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>RASIO LANDAS</div><div className="font-medium">{item.rasioLandas || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BIAYA LANDAS</div><div className="font-medium">{item.biayaLandas || '-'}</div></div>
                 </div>
               </div>
             </div>
