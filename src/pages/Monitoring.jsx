@@ -303,32 +303,34 @@ const Monitoring = () => {
                 <td>{item.ratio}</td>
                 <td>{item.funnel}</td>
                 <td>
-                  <input 
-                    list={`exec-list-${item.id}`}
+                  <select 
                     value={item.executorCWM || ''} 
                     onChange={(e) => handleInlineChange(item, 'executorCWM', e.target.value)}
-                    style={{ padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px' }}
-                    placeholder="Pilih / Ketik"
-                  />
-                  <datalist id={`exec-list-${item.id}`}>
+                    style={{ padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px', cursor: 'pointer' }}
+                  >
+                    <option value="" disabled>-- Pilih --</option>
                     {teamMembers.map(user => (
-                      <option key={`inline-exec-${user.id || user.name}`} value={user.name}>{user.role}</option>
+                      <option key={`inline-exec-${user.id || user.name}`} value={user.name}>{user.name}</option>
                     ))}
-                  </datalist>
+                    {item.executorCWM && !teamMembers.some(u => u.name === item.executorCWM) && (
+                      <option value={item.executorCWM}>{item.executorCWM}</option>
+                    )}
+                  </select>
                 </td>
                 <td>
-                  <input 
-                    list={`pic-list-${item.id}`}
+                  <select 
                     value={item.picKonten || ''} 
                     onChange={(e) => handleInlineChange(item, 'picKonten', e.target.value)}
-                    style={{ padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px' }}
-                    placeholder="Pilih / Ketik"
-                  />
-                  <datalist id={`pic-list-${item.id}`}>
+                    style={{ padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px', cursor: 'pointer' }}
+                  >
+                    <option value="" disabled>-- Pilih --</option>
                     {teamMembers.map(user => (
-                      <option key={`inline-pic-${user.id || user.name}`} value={user.name}>{user.role}</option>
+                      <option key={`inline-pic-${user.id || user.name}`} value={user.name}>{user.name}</option>
                     ))}
-                  </datalist>
+                    {item.picKonten && !teamMembers.some(u => u.name === item.picKonten) && (
+                      <option value={item.picKonten}>{item.picKonten}</option>
+                    )}
+                  </select>
                 </td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -419,39 +421,41 @@ const Monitoring = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label>Executor CWM</label>
-                  <input 
+                  <select 
                     name="executorCWM" 
-                    list="modal-exec-list"
                     value={formData.executorCWM} 
                     onChange={handleInputChange} 
                     required 
                     className="login-input"
-                    placeholder="Pilih / Ketik Nama"
-                    autoComplete="off"
-                  />
-                  <datalist id="modal-exec-list">
+                    style={{ cursor: 'pointer', appearance: 'auto' }}
+                  >
+                    <option value="" disabled>-- Pilih Executor CWM --</option>
                     {teamMembers.map(user => (
-                      <option key={`exec-${user.id || user.name}`} value={user.name}>{user.role}</option>
+                      <option key={`exec-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
                     ))}
-                  </datalist>
+                    {formData.executorCWM && !teamMembers.some(u => u.name === formData.executorCWM) && (
+                      <option value={formData.executorCWM}>{formData.executorCWM}</option>
+                    )}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label>PIC Konten (Adv/Skripter)</label>
-                  <input 
+                  <select 
                     name="picKonten" 
-                    list="modal-pic-list"
                     value={formData.picKonten} 
                     onChange={handleInputChange} 
                     required 
                     className="login-input"
-                    placeholder="Pilih / Ketik Nama"
-                    autoComplete="off"
-                  />
-                  <datalist id="modal-pic-list">
+                    style={{ cursor: 'pointer', appearance: 'auto' }}
+                  >
+                    <option value="" disabled>-- Pilih PIC Konten --</option>
                     {teamMembers.map(user => (
-                      <option key={`pic-${user.id || user.name}`} value={user.name}>{user.role}</option>
+                      <option key={`pic-${user.id || user.name}`} value={user.name}>{user.name} ({user.role})</option>
                     ))}
-                  </datalist>
+                    {formData.picKonten && !teamMembers.some(u => u.name === formData.picKonten) && (
+                      <option value={formData.picKonten}>{formData.picKonten}</option>
+                    )}
+                  </select>
                 </div>
               </div>
 
