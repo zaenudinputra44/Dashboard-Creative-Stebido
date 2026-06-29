@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { monitoringData as initialData, teamData } from '../data/dummyData';
-import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiExternalLink, FiX, FiBell } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiExternalLink, FiX, FiBell, FiDownload } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import '../tables.css';
 
@@ -201,13 +201,56 @@ const Monitoring = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    if (filteredData.length === 0) {
+      alert("Tidak ada data untuk diekspor!");
+      return;
+    }
+
+    const headers = [
+      "Status", "Week", "Produk", "Tanggal Konten", "Judul Konten", 
+      "Jenis Konten", "Ratio", "Funnel", "Executor CWM", "PIC Konten (Adv/Skripter)", "Link Konten"
+    ];
+
+    const csvContent = [
+      headers.join(","),
+      ...filteredData.map(item => [
+        `"${item.status || ''}"`,
+        `"${item.week || ''}"`,
+        `"${item.produk || ''}"`,
+        `"${item.tanggalKonten || ''}"`,
+        `"${item.judulKonten || ''}"`,
+        `"${item.jenisKonten || ''}"`,
+        `"${item.ratio || ''}"`,
+        `"${item.funnel || ''}"`,
+        `"${item.executorCWM || ''}"`,
+        `"${item.picKonten || ''}"`,
+        `"${item.linkKonten || ''}"`
+      ].join(","))
+    ].join("\\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Monitoring_Pekerjaan_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="page-container" style={{ position: 'relative' }}>
       <div className="flex-between mb-4">
         <h2>Monitoring Pekerjaan</h2>
-        <button className="action-btn" onClick={() => handleOpenModal()}>
-          <FiPlus /> Tambah Data Pekerjaan
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button className="action-btn" onClick={handleExportCSV} style={{ backgroundColor: 'var(--success-color)' }}>
+            <FiDownload /> Export CSV
+          </button>
+          <button className="action-btn" onClick={() => handleOpenModal()}>
+            <FiPlus /> Tambah Data Pekerjaan
+          </button>
+        </div>
       </div>
 
       <div className="filters-bar" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
