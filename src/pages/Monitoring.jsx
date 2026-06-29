@@ -182,24 +182,7 @@ const Monitoring = () => {
     }
   };
 
-  const handleToggleStatus = async (item) => {
-    const newStatus = item.status === 'Selesai' ? 'Proses' : 'Selesai';
-    const updatedItem = { ...item, status: newStatus };
-    
-    // Optimistic UI update
-    setData(prev => prev.map(d => d.id === item.id ? updatedItem : d));
 
-    try {
-      const res = await fetch('/api/monitoring', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedItem)
-      });
-      if (!res.ok) throw new Error('Gagal update status');
-    } catch (err) {
-      console.warn('Fallback lokal update status', err);
-    }
-  };
 
   const getUserStyle = (name) => {
     if (!name) return { padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px', cursor: 'pointer' };
@@ -317,16 +300,30 @@ const Monitoring = () => {
             {filteredData.map(item => (
               <tr key={item.id}>
                 <td style={{ textAlign: 'center' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={item.status === 'Selesai'} 
-                    onChange={() => handleToggleStatus(item)}
-                    style={{ transform: 'scale(1.5)', cursor: 'pointer' }}
-                    title={item.status === 'Selesai' ? "Tandai Belum Selesai" : "Tandai Selesai"}
-                  />
-                  <div style={{ fontSize: '0.75rem', marginTop: '0.25rem', color: item.status === 'Selesai' ? 'var(--success-color)' : 'var(--warning-color)' }}>
-                    {item.status === 'Selesai' ? 'Selesai' : 'Proses'}
-                  </div>
+                  <select 
+                    value={item.status}
+                    onChange={(e) => handleInlineChange(item, 'status', e.target.value)}
+                    style={{
+                      padding: '0.35rem 0.5rem',
+                      borderRadius: '4px',
+                      border: 'none',
+                      backgroundColor: item.status === 'Selesai' 
+                                       ? 'var(--success-color)' 
+                                       : item.status === 'Revisi' 
+                                         ? 'var(--danger-color)' 
+                                         : 'var(--warning-color)',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      outline: 'none',
+                      width: '100%',
+                      appearance: 'auto' // ensure dropdown arrow is visible depending on OS
+                    }}
+                  >
+                    <option value="Proses" style={{color: '#333', background: 'white'}}>Proses</option>
+                    <option value="Revisi" style={{color: '#333', background: 'white'}}>Revisi</option>
+                    <option value="Selesai" style={{color: '#333', background: 'white'}}>Selesai</option>
+                  </select>
                 </td>
                 <td><span className="badge badge-info">{item.week}</span></td>
                 <td>{item.produk}</td>
