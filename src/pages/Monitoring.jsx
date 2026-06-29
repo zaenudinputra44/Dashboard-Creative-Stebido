@@ -11,26 +11,6 @@ const Monitoring = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [teamMembers, setTeamMembers] = useState(teamData); // Default fallback
 
-  const [dismissedNotifications, setDismissedNotifications] = useState(() => {
-    try {
-      const saved = localStorage.getItem('dismissedNotifs');
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      return [];
-    }
-  });
-
-  const activeNotifications = data.filter(item => 
-    item.status === 'Selesai' && 
-    item.picKonten === currentUser?.name && 
-    !dismissedNotifications.includes(item.id)
-  );
-
-  const dismissNotification = (id) => {
-    const updated = [...dismissedNotifications, id];
-    setDismissedNotifications(updated);
-    localStorage.setItem('dismissedNotifs', JSON.stringify(updated));
-  };
 
   const fetchData = () => {
     fetch('/api/monitoring')
@@ -229,25 +209,6 @@ const Monitoring = () => {
           <FiPlus /> Tambah Data Pekerjaan
         </button>
       </div>
-
-      {activeNotifications.length > 0 && (
-        <div className="card mb-4" style={{ backgroundColor: 'var(--info-color)', color: 'white', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'white', fontSize: '1.1rem', margin: 0 }}><FiBell /> Pemberitahuan Pekerjaan Selesai</h3>
-          <p style={{ margin: 0, fontSize: '0.9rem' }}>Halo {currentUser?.name}, ada pekerjaan yang telah diselesaikan oleh tim CWM dan menunggu tindakan Anda:</p>
-          <ul style={{ marginLeft: '1.5rem', listStyle: 'disc', marginTop: '0.5rem' }}>
-            {activeNotifications.map(task => (
-              <li key={`notif-${task.id}`} style={{ marginBottom: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span><strong>{task.judulKonten}</strong> (oleh {task.executorCWM})</span>
-                  <button onClick={() => dismissNotification(task.id)} style={{ padding: '0.3rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'rgba(255,255,255,0.2)', color: 'white', borderRadius: '4px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.4)' }}>
-                    Tandai Dilihat
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       <div className="filters-bar" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
         <div className="search-box" style={{ flex: '1' }}>

@@ -11,6 +11,7 @@ import Evaluation from './pages/Evaluation';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import NotificationBell from './components/NotificationBell';
 import './App.css';
 
 // Protected Route Wrapper
@@ -73,6 +74,7 @@ const Layout = ({ children, theme, toggleTheme }) => {
             <button className="theme-toggle" onClick={toggleTheme}>
               {theme === 'light' ? <FiMoon size={20} /> : <FiSun size={20} />}
             </button>
+            <NotificationBell />
             <div className="user-profile" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{currentUser?.name || 'User'}</div>

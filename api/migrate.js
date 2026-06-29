@@ -112,11 +112,24 @@ export default async function handler(req, res) {
       );
     `;
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_name VARCHAR(100),
+        target_role VARCHAR(100),
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
     // 2. Clear existing data (optional, but good for fresh migration)
     await sql`TRUNCATE TABLE users RESTART IDENTITY CASCADE`;
     await sql`TRUNCATE TABLE monitoring_pekerjaan RESTART IDENTITY CASCADE`;
     await sql`TRUNCATE TABLE technical_issues RESTART IDENTITY CASCADE`;
     await sql`TRUNCATE TABLE evaluations RESTART IDENTITY CASCADE`;
+    await sql`TRUNCATE TABLE notifications RESTART IDENTITY CASCADE`;
 
     // 3. Seed Users Data
     for (const user of teamData) {

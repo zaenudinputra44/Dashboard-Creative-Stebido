@@ -36,6 +36,10 @@ export default async function handler(req, res) {
     
     else if (req.method === 'PUT') {
       const { id, week, produk, linkKonten, tanggalKonten, judulKonten, jenisKonten, ratio, funnel, executorCWM, picKonten, status } = req.body;
+      
+      const previous = await sql`SELECT status FROM monitoring_pekerjaan WHERE id = ${id}`;
+      const wasSelesai = previous.length > 0 && previous[0].status === 'Selesai';
+
       const result = await sql`
         UPDATE monitoring_pekerjaan 
         SET week=${week}, produk=${produk}, link_konten=${linkKonten}, tanggal_konten=${tanggalKonten}, 
@@ -44,6 +48,30 @@ export default async function handler(req, res) {
         WHERE id = ${id}
         RETURNING *
       `;
+
+      if (status === 'Selesai' && !wasSelesai) {
+        try {
+          const leaders = await sql`SELECT name FROM users WHERE role IN ('Leader Content Web Marketing', 'Supervisor')`;
+          
+          const recipients = new Set();
+          if (executorCWM) recipients.add(executorCWM);
+          if (picKonten) recipients.add(picKonten);
+          leaders.forEach(u => recipients.add(u.name));
+          
+          const title = "Pekerjaan Selesai!";
+          const message = `Pekerjaan "${judulKonten}" telah diselesaikan oleh ${executorCWM}.`;
+          
+          for (const user of recipients) {
+            await sql`
+              INSERT INTO notifications (user_name, title, message) 
+              VALUES (${user}, ${title}, ${message})
+            `;
+          }
+        } catch (notifErr) {
+          console.error("Gagal mengirim notifikasi:", notifErr);
+        }
+      }
+
       return res.status(200).json(mapRow(result[0]));
     }
     
