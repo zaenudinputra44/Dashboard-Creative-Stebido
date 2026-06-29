@@ -28,6 +28,20 @@ export default async function handler(req, res) {
       return res.status(200).json(result[0]);
     }
     
+    else if (req.method === 'DELETE') {
+      const { id } = req.query;
+      if (!id) {
+        const { id: bodyId } = req.body || {};
+        if (bodyId) {
+          await sql`DELETE FROM technical_issues WHERE id = ${bodyId}`;
+          return res.status(200).json({ success: true });
+        }
+        return res.status(400).json({ error: 'Missing ID' });
+      }
+      await sql`DELETE FROM technical_issues WHERE id = ${id}`;
+      return res.status(200).json({ success: true });
+    }
+    
     else {
       return res.status(405).json({ error: 'Method Not Allowed' });
     }

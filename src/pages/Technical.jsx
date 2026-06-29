@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { technicalIssues as initialData } from '../data/dummyData';
-import { FiCheckCircle, FiTool, FiPlus, FiX } from 'react-icons/fi';
+import { FiCheckCircle, FiTool, FiPlus, FiX, FiTrash2 } from 'react-icons/fi';
 
 const Technical = () => {
   const [issues, setIssues] = useState([]);
@@ -39,6 +39,17 @@ const Technical = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus kendala ini?')) return;
+    try {
+      const res = await fetch(`/api/technical?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Gagal menghapus');
+      setIssues(prev => prev.filter(issue => issue.id !== id));
+    } catch (err) {
+      setIssues(prev => prev.filter(issue => issue.id !== id));
+    }
+  };
+
   const handleAddIssue = async (e) => {
     e.preventDefault();
     try {
@@ -70,47 +81,49 @@ const Technical = () => {
         </button>
       </div>
 
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Deskripsi Kendala</th>
-              <th>Tingkat Keparahan</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {issues.map((item) => (
-              <tr key={item.id} style={{ opacity: item.status === 'Selesai' ? 0.6 : 1 }}>
-                <td>#{item.id}</td>
-                <td className="font-medium">{item.issue}</td>
-                <td>
-                  <span className={`badge ${item.severity === 'Kritis' ? 'badge-danger' : item.severity === 'Tinggi' ? 'badge-warning' : item.severity === 'Sedang' ? 'badge-info' : 'badge-gray'}`}>
-                    {item.severity}
-                  </span>
-                </td>
-                <td>
-                  <span className={`badge ${item.status === 'Selesai' ? 'badge-success' : 'badge-gray'}`}>
-                    {item.status}
-                  </span>
-                </td>
-                <td>
-                  {item.status !== 'Selesai' && (
-                    <button 
-                      className="action-btn secondary"
-                      onClick={() => handleMarkResolved(item.id)}
-                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}
-                    >
-                      <FiCheckCircle /> Tandai Selesai
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        {issues.map((item) => (
+          <div className="card" key={item.id} style={{ position: 'relative', opacity: item.status === 'Selesai' ? 0.6 : 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'flex-start' }}>
+              <span className={`badge ${item.severity === 'Kritis' ? 'badge-danger' : item.severity === 'Tinggi' ? 'badge-warning' : item.severity === 'Sedang' ? 'badge-info' : 'badge-gray'}`}>
+                {item.severity}
+              </span>
+              <button 
+                onClick={() => handleDelete(item.id)} 
+                style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontSize: '1.1rem' }}
+                title="Hapus Kendala"
+              >
+                <FiTrash2 />
+              </button>
+            </div>
+            
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Kendala #{item.id}</div>
+            
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', fontWeight: 500, lineHeight: '1.4', flex: 1, color: 'var(--text-main)' }}>
+              {item.issue}
+            </h3>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+              <span className={`badge ${item.status === 'Selesai' ? 'badge-success' : 'badge-gray'}`}>
+                {item.status}
+              </span>
+              {item.status !== 'Selesai' && (
+                <button 
+                  className="action-btn secondary"
+                  onClick={() => handleMarkResolved(item.id)}
+                  style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+                >
+                  <FiCheckCircle /> Selesai
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+        {issues.length === 0 && (
+          <div className="card" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem' }}>
+            <p className="text-muted">Belum ada laporan kendala teknis.</p>
+          </div>
+        )}
       </div>
 
       {isModalOpen && (
