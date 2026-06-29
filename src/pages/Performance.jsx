@@ -101,7 +101,29 @@ const Performance = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    const currencyFields = ['budget', 'biayaKontak', 'cac', 'cpm', 'cpc', 'biayaLandas'];
+    const numberFields = ['kontak', 'closing', 'klikTautan', 'tayanganLandas'];
+    
+    if (currencyFields.includes(name)) {
+      const raw = value.replace(/\D/g, '');
+      if (raw) {
+        const formatted = 'Rp ' + parseInt(raw, 10).toLocaleString('id-ID');
+        setFormData(prev => ({ ...prev, [name]: formatted }));
+      } else {
+        setFormData(prev => ({ ...prev, [name]: '' }));
+      }
+    } else if (numberFields.includes(name)) {
+      const raw = value.replace(/\D/g, '');
+      if (raw) {
+        const formatted = parseInt(raw, 10).toLocaleString('id-ID');
+        setFormData(prev => ({ ...prev, [name]: formatted }));
+      } else {
+        setFormData(prev => ({ ...prev, [name]: '' }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSaveManual = async (e) => {
