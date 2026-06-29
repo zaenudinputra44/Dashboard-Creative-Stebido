@@ -15,12 +15,19 @@ const Performance = () => {
   const [formData, setFormData] = useState({
     title: '',
     metaLink: '',
-    funnel: 'Cold',
-    ratio: '1:1',
-    impressions: '',
-    clicks: '',
-    transactions: '',
-    roas: ''
+    budget: '',
+    kontak: '',
+    biayaKontak: '',
+    closing: '',
+    cac: '',
+    cpm: '',
+    cpc: '',
+    ctrManual: '',
+    klikTautan: '',
+    tayanganLandas: '',
+    roas: '',
+    rasioLandas: '',
+    biayaLandas: ''
   });
 
   // Load dari API Vercel / Neon DB
@@ -56,16 +63,7 @@ const Performance = () => {
     setIsSaving(true);
     
     try {
-      const payload = {
-        title: formData.title,
-        metaLink: formData.metaLink,
-        funnel: formData.funnel,
-        ratio: formData.ratio,
-        impressions: parseInt(formData.impressions || 0, 10),
-        clicks: parseInt(formData.clicks || 0, 10),
-        transactions: parseInt(formData.transactions || 0, 10),
-        roas: parseFloat(formData.roas || 0).toFixed(2)
-      };
+      const payload = { ...formData };
 
       const res = await fetch('/api/performance', {
         method: 'POST',
@@ -76,35 +74,20 @@ const Performance = () => {
       if (!res.ok) throw new Error('Gagal simpan ke DB');
       
       setIsModalOpen(false);
-      setFormData({ title: '', metaLink: '', funnel: 'Cold', ratio: '1:1', impressions: '', clicks: '', transactions: '', roas: '' });
+      setFormData({ title: '', metaLink: '', budget: '', kontak: '', biayaKontak: '', closing: '', cac: '', cpm: '', cpc: '', ctrManual: '', klikTautan: '', tayanganLandas: '', roas: '', rasioLandas: '', biayaLandas: '' });
       fetchData(); // Refresh UI langsung
     } catch (err) {
       console.warn('Mode Lokal: Menyimpan ke localStorage karena DB tidak tersedia');
       
       const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
-      const ctr = formData.impressions ? ((formData.clicks / formData.impressions) * 100).toFixed(2) : '0.00';
-      const conversionRate = formData.clicks ? ((formData.transactions / formData.clicks) * 100).toFixed(2) : '0.00';
-      
-      const newData = {
-        id: newId,
-        title: formData.title,
-        funnel: formData.funnel,
-        ratio: formData.ratio,
-        impressions: parseInt(formData.impressions || 0, 10),
-        clicks: parseInt(formData.clicks || 0, 10),
-        ctr,
-        transactions: parseInt(formData.transactions || 0, 10),
-        conversionRate,
-        roas: parseFloat(formData.roas || 0).toFixed(2),
-        metaLink: formData.metaLink
-      };
+      const newData = { id: newId, ...formData };
 
       const updatedData = [newData, ...data];
       setData(updatedData);
       localStorage.setItem('performanceData_v2', JSON.stringify(updatedData));
       
       setIsModalOpen(false);
-      setFormData({ title: '', metaLink: '', funnel: 'Cold', ratio: '1:1', impressions: '', clicks: '', transactions: '', roas: '' });
+      setFormData({ title: '', metaLink: '', budget: '', kontak: '', biayaKontak: '', closing: '', cac: '', cpm: '', cpc: '', ctrManual: '', klikTautan: '', tayanganLandas: '', roas: '', rasioLandas: '', biayaLandas: '' });
     } finally {
       setIsSaving(false);
     }
@@ -159,10 +142,7 @@ const Performance = () => {
 
   const processedData = useMemo(() => {
     let filtered = data.filter(item => {
-      const matchSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchFunnel = filterFunnel === 'All' || item.funnel === filterFunnel;
-      const matchRatio = filterRatio === 'All' || item.ratio === filterRatio;
-      return matchSearch && matchFunnel && matchRatio;
+      return item.title.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
     if (sortConfig.key) {
@@ -185,7 +165,7 @@ const Performance = () => {
       });
     }
     return filtered;
-  }, [searchTerm, filterFunnel, filterRatio, sortConfig, data]);
+  }, [searchTerm, sortConfig, data]);
 
   const renderSortIcon = (key) => {
     if (sortConfig.key !== key) return null;
@@ -193,21 +173,26 @@ const Performance = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = ["Konten", "Link Konten", "Funnel", "Ratio", "Impressions", "Clicks", "CTR (%)", "Konversi", "CVR (%)", "ROAS"];
+    const headers = ["Judul Konten", "Link Konten", "Budget", "Kontak", "Biaya Kontak", "Closing", "CAC", "CPM", "CPC", "CTR", "Klik Tautan", "Tayangan Landas", "ROAS", "Rasio Landas", "Biaya Landas"];
     
     const csvRows = [
       headers.join(","),
       ...processedData.map(item => [
         `"${item.title}"`,
         `"${item.metaLink || '-'}"`,
-        `"${item.funnel}"`,
-        `"${item.ratio}"`,
-        item.impressions,
-        item.clicks,
-        item.ctr,
-        item.transactions,
-        item.conversionRate,
-        item.roas
+        `"${item.budget || '-'}"`,
+        `"${item.kontak || '-'}"`,
+        `"${item.biayaKontak || '-'}"`,
+        `"${item.closing || '-'}"`,
+        `"${item.cac || '-'}"`,
+        `"${item.cpm || '-'}"`,
+        `"${item.cpc || '-'}"`,
+        `"${item.ctrManual || '-'}"`,
+        `"${item.klikTautan || '-'}"`,
+        `"${item.tayanganLandas || '-'}"`,
+        `"${item.roas || '-'}"`,
+        `"${item.rasioLandas || '-'}"`,
+        `"${item.biayaLandas || '-'}"`
       ].join(","))
     ];
 
@@ -248,18 +233,6 @@ const Performance = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <select className="filter-input" value={filterFunnel} onChange={(e) => setFilterFunnel(e.target.value)}>
-          <option value="All">Semua Funnel</option>
-          <option value="Cold">Cold</option>
-          <option value="Warm">Warm</option>
-          <option value="Hot">Hot</option>
-        </select>
-        <select className="filter-input" value={filterRatio} onChange={(e) => setFilterRatio(e.target.value)}>
-          <option value="All">Semua Ratio</option>
-          <option value="1:1">1:1</option>
-          <option value="4:5">4:5</option>
-          <option value="9:16">9:16</option>
-        </select>
       </div>
 
       <div className="table-container">
@@ -267,47 +240,48 @@ const Performance = () => {
           <thead>
             <tr>
               <th onClick={() => handleSort('title')} style={{cursor: 'pointer'}}>Konten {renderSortIcon('title')}</th>
-              <th>Link Konten</th>
-              <th onClick={() => handleSort('funnel')} style={{cursor: 'pointer'}}>Funnel {renderSortIcon('funnel')}</th>
-              <th onClick={() => handleSort('ratio')} style={{cursor: 'pointer'}}>Ratio {renderSortIcon('ratio')}</th>
-              <th onClick={() => handleSort('impressions')} style={{cursor: 'pointer'}}>Impressions {renderSortIcon('impressions')}</th>
-              <th onClick={() => handleSort('clicks')} style={{cursor: 'pointer'}}>Clicks {renderSortIcon('clicks')}</th>
-              <th onClick={() => handleSort('ctr')} style={{cursor: 'pointer'}}>CTR (%) {renderSortIcon('ctr')}</th>
-              <th onClick={() => handleSort('transactions')} style={{cursor: 'pointer'}}>Konversi {renderSortIcon('transactions')}</th>
-              <th onClick={() => handleSort('conversionRate')} style={{cursor: 'pointer'}}>CVR (%) {renderSortIcon('conversionRate')}</th>
+              <th onClick={() => handleSort('budget')} style={{cursor: 'pointer'}}>Budget {renderSortIcon('budget')}</th>
+              <th onClick={() => handleSort('kontak')} style={{cursor: 'pointer'}}>Kontak {renderSortIcon('kontak')}</th>
+              <th onClick={() => handleSort('biayaKontak')} style={{cursor: 'pointer'}}>Biaya Kontak {renderSortIcon('biayaKontak')}</th>
+              <th onClick={() => handleSort('closing')} style={{cursor: 'pointer'}}>Closing {renderSortIcon('closing')}</th>
+              <th onClick={() => handleSort('cac')} style={{cursor: 'pointer'}}>CAC {renderSortIcon('cac')}</th>
+              <th onClick={() => handleSort('cpm')} style={{cursor: 'pointer'}}>CPM {renderSortIcon('cpm')}</th>
+              <th onClick={() => handleSort('cpc')} style={{cursor: 'pointer'}}>CPC {renderSortIcon('cpc')}</th>
+              <th onClick={() => handleSort('ctrManual')} style={{cursor: 'pointer'}}>CTR {renderSortIcon('ctrManual')}</th>
+              <th onClick={() => handleSort('klikTautan')} style={{cursor: 'pointer'}}>Klik Tautan {renderSortIcon('klikTautan')}</th>
+              <th onClick={() => handleSort('tayanganLandas')} style={{cursor: 'pointer'}}>Tayangan Landas {renderSortIcon('tayanganLandas')}</th>
               <th onClick={() => handleSort('roas')} style={{cursor: 'pointer'}}>ROAS {renderSortIcon('roas')}</th>
+              <th onClick={() => handleSort('rasioLandas')} style={{cursor: 'pointer'}}>Rasio Landas {renderSortIcon('rasioLandas')}</th>
+              <th onClick={() => handleSort('biayaLandas')} style={{cursor: 'pointer'}}>Biaya Landas {renderSortIcon('biayaLandas')}</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
             {processedData.map((item) => (
               <tr key={item.id}>
-                <td className="font-medium">{item.title}</td>
-                <td>
-                  {item.metaLink && item.metaLink !== '-' ? (
-                    <a href={item.metaLink} target="_blank" rel="noreferrer" style={{ color: 'var(--primary-color)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <FiLink size={14} /> Meta Ads
-                    </a>
-                  ) : (
-                    <span className="text-muted">-</span>
+                <td className="font-medium">
+                  {item.title}
+                  {item.metaLink && item.metaLink !== '-' && (
+                    <div style={{ marginTop: '0.25rem' }}>
+                      <a href={item.metaLink} target="_blank" rel="noreferrer" style={{ fontSize: '0.75rem', color: 'var(--primary-color)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <FiLink size={12} /> Meta Ads
+                      </a>
+                    </div>
                   )}
                 </td>
-                <td><span className={`badge ${item.funnel === 'Hot' ? 'badge-danger' : item.funnel === 'Warm' ? 'badge-warning' : 'badge-info'}`}>{item.funnel}</span></td>
-                <td>{item.ratio}</td>
-                <td>{item.impressions.toLocaleString()}</td>
-                <td>{item.clicks.toLocaleString()}</td>
-                <td>
-                  <span style={{ color: parseFloat(item.ctr) > 2 ? 'var(--success-color)' : 'inherit' }}>
-                    {item.ctr}%
-                  </span>
-                </td>
-                <td>{item.transactions}</td>
-                <td>{item.conversionRate}%</td>
-                <td>
-                  <span style={{ color: parseFloat(item.roas) >= 3 ? 'var(--success-color)' : parseFloat(item.roas) < 1.5 ? 'var(--danger-color)' : 'inherit', fontWeight: 'bold' }}>
-                    {item.roas}x
-                  </span>
-                </td>
+                <td>{item.budget || '-'}</td>
+                <td>{item.kontak || '-'}</td>
+                <td>{item.biayaKontak || '-'}</td>
+                <td>{item.closing || '-'}</td>
+                <td>{item.cac || '-'}</td>
+                <td>{item.cpm || '-'}</td>
+                <td>{item.cpc || '-'}</td>
+                <td>{item.ctrManual || '-'}</td>
+                <td>{item.klikTautan || '-'}</td>
+                <td>{item.tayanganLandas || '-'}</td>
+                <td>{item.roas || '-'}</td>
+                <td>{item.rasioLandas || '-'}</td>
+                <td>{item.biayaLandas || '-'}</td>
                 <td style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
                   <button 
                     className="action-btn"
@@ -355,40 +329,64 @@ const Performance = () => {
               </div>
               <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Funnel</label>
-                  <select name="funnel" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.funnel} onChange={handleInputChange}>
-                    <option value="Cold">Cold</option>
-                    <option value="Warm">Warm</option>
-                    <option value="Hot">Hot</option>
-                  </select>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Budget</label>
+                  <input type="text" name="budget" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.budget} onChange={handleInputChange} placeholder="Contoh: Rp 18.272.227" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Ratio</label>
-                  <select name="ratio" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.ratio} onChange={handleInputChange}>
-                    <option value="1:1">1:1</option>
-                    <option value="4:5">4:5</option>
-                    <option value="9:16">9:16</option>
-                  </select>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Kontak</label>
+                  <input type="text" name="kontak" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.kontak} onChange={handleInputChange} placeholder="Contoh: 225" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Biaya Kontak</label>
+                  <input type="text" name="biayaKontak" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.biayaKontak} onChange={handleInputChange} placeholder="Contoh: Rp 81.210" />
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Impressions</label>
-                  <input type="number" name="impressions" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.impressions} onChange={handleInputChange} required />
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Closing</label>
+                  <input type="text" name="closing" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.closing} onChange={handleInputChange} placeholder="Contoh: 81" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Clicks</label>
-                  <input type="number" name="clicks" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.clicks} onChange={handleInputChange} required />
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>CAC</label>
+                  <input type="text" name="cac" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.cac} onChange={handleInputChange} placeholder="Contoh: 61,84%" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>CPM</label>
+                  <input type="text" name="cpm" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.cpm} onChange={handleInputChange} placeholder="Contoh: Rp 29.495" />
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Konversi (Transactions)</label>
-                  <input type="number" name="transactions" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.transactions} onChange={handleInputChange} required />
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>CPC</label>
+                  <input type="text" name="cpc" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.cpc} onChange={handleInputChange} placeholder="Contoh: Rp 2.316" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>CTR</label>
+                  <input type="text" name="ctrManual" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.ctrManual} onChange={handleInputChange} placeholder="Contoh: 1,27%" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Klik Tautan</label>
+                  <input type="text" name="klikTautan" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.klikTautan} onChange={handleInputChange} placeholder="Contoh: 7.889" />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Tayangan Landas</label>
+                  <input type="text" name="tayanganLandas" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.tayanganLandas} onChange={handleInputChange} placeholder="Contoh: 5.013" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>ROAS</label>
-                  <input type="number" step="0.01" name="roas" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.roas} onChange={handleInputChange} required />
+                  <input type="text" name="roas" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.roas} onChange={handleInputChange} placeholder="Contoh: 1.8" />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Rasio Landas</label>
+                  <input type="text" name="rasioLandas" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.rasioLandas} onChange={handleInputChange} placeholder="Contoh: 63,54%" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Biaya Landas</label>
+                  <input type="text" name="biayaLandas" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.biayaLandas} onChange={handleInputChange} placeholder="Contoh: Rp 3.645" />
                 </div>
               </div>
               <div className="modal-footer" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
