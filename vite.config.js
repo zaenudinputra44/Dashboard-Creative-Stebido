@@ -20,11 +20,9 @@ const vercelDevServer = () => {
             // Dynamic import cache busting for hot-reloading
             const module = await import('file://' + handlerPath + '?update=' + Date.now());
             if (module.default) {
-              let body = '';
-              req.on('data', chunk => body += chunk.toString());
-              req.on('end', async () => {
-                if (body) {
-                  try { req.body = JSON.parse(body); } catch(e) {}
+              const executeApi = async (bodyStr) => {
+                if (bodyStr) {
+                  try { req.body = JSON.parse(bodyStr); } catch(e) {}
                 }
                 
                 req.query = Object.fromEntries(urlObj.searchParams);
@@ -45,8 +43,16 @@ const vercelDevServer = () => {
                   console.error('API execution error:', err);
                   res.status(500).json({ error: err.message });
                 }
-              });
-              return; // Stop middleware chain if we handled it
+              };
+
+              if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+                let body = '';
+                req.on('data', chunk => body += chunk.toString());
+                req.on('end', () => executeApi(body));
+              } else {
+                executeApi('');
+              }
+              return; // Stop middleware chain
             }
           } catch (e) {
             // File doesn't exist or failed to load
