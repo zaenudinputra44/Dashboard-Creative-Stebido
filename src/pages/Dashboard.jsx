@@ -61,17 +61,24 @@ const Dashboard = () => {
   const dueTodayJobs = monitoringData.filter(job => job.status !== 'Selesai').slice(0, 3);
   const unresolvedIssues = technicalIssues.filter(issue => issue.status !== 'Selesai');
   
-  // Performa metrics
-  const totalSpend = performanceData.reduce((acc, curr) => acc + (parseFloat(curr.spend) || 0), 0);
-  const totalRoas = performanceData.reduce((acc, curr) => acc + (parseFloat(curr.roas) || 0), 0);
-  const avgRoas = performanceData.length > 0 ? (totalRoas / performanceData.length).toFixed(2) : 0;
-  
-  // Transform performance data for chart
-  const dynamicChartData = performanceData.slice(0, 5).map(item => ({
-    name: item.title?.substring(0, 10) + '...',
-    target: item.spend || 0,
-    realisasi: (item.roas * item.spend) || 0
-  }));
+  // Transform monitoring data for productivity chart
+  const executorStats = {};
+  monitoringData.forEach(job => {
+    const exec = job.executorCWM || 'Tanpa Executor';
+    if (!executorStats[exec]) {
+      executorStats[exec] = { name: exec.split(' ')[0], selesai: 0, proses: 0, total: 0 };
+    }
+    executorStats[exec].total += 1;
+    if (job.status === 'Selesai') {
+      executorStats[exec].selesai += 1;
+    } else {
+      executorStats[exec].proses += 1;
+    }
+  });
+
+  const dynamicChartData = Object.values(executorStats)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
 
   // Identify top PIC dynamically
   const picStats = {};
@@ -123,7 +130,7 @@ const Dashboard = () => {
       <div className="dashboard-main-grid">
         {/* Chart Section */}
         <div className="card chart-section">
-          <h3 className="card-title">Grafik Spend vs Estimasi Revenue (Top 5 Konten)</h3>
+          <h3 className="card-title">Grafik Produktivitas Tim (Top 5 Executor)</h3>
           <div className="chart-container">
             {dynamicChartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
@@ -135,13 +142,13 @@ const Dashboard = () => {
                   contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}
                 />
                 <Legend />
-                <Bar dataKey="target" name="Spend (Pengeluaran)" fill="var(--gray-color)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="realisasi" name="Estimasi Revenue" fill="var(--primary-color)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="selesai" name="Pekerjaan Selesai" fill="var(--success-color)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="proses" name="Pekerjaan Proses" fill="var(--warning-color)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
             ) : (
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-muted)' }}>
-                Belum ada data performa. Silakan isi di menu Performa Konten.
+                Belum ada data monitoring pekerjaan.
               </div>
             )}
           </div>
