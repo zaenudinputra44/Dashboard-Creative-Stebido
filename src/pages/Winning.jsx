@@ -5,6 +5,26 @@ import { FiTrendingUp, FiPlus } from 'react-icons/fi';
 const Winning = () => {
   const [data, setData] = useState([]);
 
+  const formatCurrency = (val) => {
+    if (!val || val === '-') return '-';
+    if (String(val).toLowerCase().includes('rp')) return val;
+    const num = parseFloat(String(val).replace(/\D/g, ''));
+    if (isNaN(num)) return val;
+    return 'Rp ' + num.toLocaleString('id-ID');
+  };
+
+  const formatPercent = (val) => {
+    if (!val || val === '-') return '-';
+    if (String(val).includes('%')) return val;
+    return val + '%';
+  };
+
+  const formatRoas = (val) => {
+    if (!val || val === '-') return '-';
+    if (String(val).toLowerCase().includes('x')) return val;
+    return val + 'x';
+  };
+
   const fetchData = () => {
     fetch('/api/winning')
       .then(res => {
@@ -80,19 +100,19 @@ const Winning = () => {
               
               <div style={{ marginBottom: '1.5rem', flex: 1 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: '8px' }}>
-                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BUDGET</div><div className="font-medium">{item.budgetSpent || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BUDGET</div><div className="font-medium">{formatCurrency(item.budgetSpent)}</div></div>
                   <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CLOSING</div><div className="font-medium">{item.transactions || '-'}</div></div>
-                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>ROAS</div><div className="font-medium" style={{ color: 'var(--success-color)' }}>{item.roas || '-'}</div></div>
-                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CTR</div><div className="font-medium" style={{ color: 'var(--primary-color)' }}>{item.ctr || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>ROAS</div><div className="font-medium" style={{ color: 'var(--success-color)' }}>{formatRoas(item.roas)}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CTR</div><div className="font-medium" style={{ color: 'var(--primary-color)' }}>{formatPercent(item.ctr)}</div></div>
                   <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>KONTAK</div><div className="font-medium">{item.kontak || '-'}</div></div>
-                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BIAYA KONTAK</div><div className="font-medium">{item.biayaKontak || '-'}</div></div>
-                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CAC</div><div className="font-medium">{item.cac || '-'}</div></div>
-                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CPM</div><div className="font-medium">{item.cpm || '-'}</div></div>
-                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CPC</div><div className="font-medium">{item.cpc || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BIAYA KONTAK</div><div className="font-medium">{formatCurrency(item.biayaKontak)}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CAC</div><div className="font-medium">{formatPercent(item.cac)}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CPM</div><div className="font-medium">{formatCurrency(item.cpm)}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>CPC</div><div className="font-medium">{formatCurrency(item.cpc)}</div></div>
                   <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>KLIK TAUTAN</div><div className="font-medium">{item.klikTautan || '-'}</div></div>
                   <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>TAYANGAN LANDAS</div><div className="font-medium">{item.tayanganLandas || '-'}</div></div>
-                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>RASIO LANDAS</div><div className="font-medium">{item.rasioLandas || '-'}</div></div>
-                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BIAYA LANDAS</div><div className="font-medium">{item.biayaLandas || '-'}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>RASIO LANDAS</div><div className="font-medium">{formatPercent(item.rasioLandas)}</div></div>
+                  <div><div className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>BIAYA LANDAS</div><div className="font-medium">{formatCurrency(item.biayaLandas)}</div></div>
                 </div>
               </div>
             </div>
