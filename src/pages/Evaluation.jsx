@@ -7,11 +7,20 @@ const Evaluation = () => {
 
   useEffect(() => {
     fetch('/api/evaluation')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('API not available');
+        return res.json();
+      })
       .then(data => {
-        // Fallback or API data
         if (data.length > 0) {
           setEvaluations(data);
+        }
+      })
+      .catch(err => {
+        console.warn('Fallback ke localStorage:', err.message);
+        const saved = localStorage.getItem('evaluationData');
+        if (saved) {
+          setEvaluations(JSON.parse(saved));
         } else {
           setEvaluations([
             {
@@ -25,8 +34,7 @@ const Evaluation = () => {
             }
           ]);
         }
-      })
-      .catch(err => console.error(err));
+      });
   }, []);
 
   const handleAddEvaluation = async (e) => {
@@ -47,7 +55,10 @@ const Evaluation = () => {
       setEvaluations(prev => [savedEval, ...prev]);
     } catch (err) {
       const id = evaluations.length > 0 ? Math.max(...evaluations.map(e => e.id)) + 1 : 1;
-      setEvaluations(prev => [{ id, week: newEval.week, notes }, ...prev]);
+      const newData = { id, week: newEval.week, notes };
+      const updated = [newData, ...evaluations];
+      setEvaluations(updated);
+      localStorage.setItem('evaluationData', JSON.stringify(updated));
     }
 
     setNewEval({ week: '', note1: '', note2: '' });
@@ -64,18 +75,20 @@ const Evaluation = () => {
       return note;
     });
 
-    setEvaluations(prev => prev.map(ev => 
+    const updatedEvaluations = evaluations.map(ev => 
       ev.id === evalId ? { ...ev, notes: updatedNotes } : ev
-    ));
+    );
+    setEvaluations(updatedEvaluations);
 
     try {
-      await fetch('/api/evaluation', {
+      const res = await fetch('/api/evaluation', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: evalId, notes: updatedNotes })
       });
+      if (!res.ok) throw new Error('API Error');
     } catch (err) {
-      console.warn("Gagal update checked status", err);
+      localStorage.setItem('evaluationData', JSON.stringify(updatedEvaluations));
     }
   };
 
@@ -86,7 +99,9 @@ const Evaluation = () => {
       if (!res.ok) throw new Error('Gagal menghapus evaluasi');
       setEvaluations(prev => prev.filter(e => e.id !== id));
     } catch (err) {
-      setEvaluations(prev => prev.filter(e => e.id !== id));
+      const updated = evaluations.filter(e => e.id !== id);
+      setEvaluations(updated);
+      localStorage.setItem('evaluationData', JSON.stringify(updated));
     }
   };
 
