@@ -175,36 +175,92 @@ const KOL = () => {
     }
   };
 
-  const handleExportCSV = () => {
+  const handleExportExcel = () => {
     if (filteredData.length === 0) {
       alert("Tidak ada data untuk diekspor.");
       return;
     }
 
-    const headers = ["Nama KOL", "Platform", "Tingkat", "Jadwal Tayang", "Status", "Biaya (Rp)", "Link Hasil", "PIC Internal"];
-    const csvRows = [headers.join(',')];
+    let tableHtml = `
+      <html xmlns:x="urn:schemas-microsoft-com:office:excel">
+        <head>
+          <meta charset="utf-8">
+          <style>
+            table { border-collapse: collapse; font-family: sans-serif; }
+            th { 
+              background-color: #4f46e5; 
+              color: #ffffff; 
+              font-weight: bold; 
+              border: 1px solid #c7d2fe; 
+              padding: 10px;
+              text-align: center;
+            }
+            td { 
+              border: 1px solid #e5e7eb; 
+              padding: 8px; 
+              vertical-align: middle;
+            }
+            .title {
+              font-size: 18px;
+              font-weight: bold;
+              text-align: center;
+              color: #374151;
+            }
+          </style>
+        </head>
+        <body>
+          <table>
+            <tr><td colspan="8" class="title">Laporan Data KOL (Influencer)</td></tr>
+            <tr><td colspan="8" style="text-align: center; color: #6b7280;">Dicetak pada: ${new Date().toLocaleString('id-ID')}</td></tr>
+            <tr><td colspan="8"></td></tr>
+            <tr>
+              <th>Nama KOL</th>
+              <th>Platform</th>
+              <th>Tingkat</th>
+              <th>Jadwal Tayang</th>
+              <th>Status</th>
+              <th>Biaya (Rp)</th>
+              <th>Link Hasil</th>
+              <th>PIC Internal</th>
+            </tr>
+    `;
 
-    filteredData.forEach(item => {
-      const row = [
-        `"${item.nama_kol || ''}"`,
-        `"${item.platform || ''}"`,
-        `"${item.tingkat || ''}"`,
-        `"${item.jadwal_tayang ? new Date(item.jadwal_tayang).toLocaleDateString('id-ID') : '-'}"`,
-        `"${item.status || ''}"`,
-        `"${item.biaya || 0}"`,
-        `"${item.link_hasil || ''}"`,
-        `"${item.pic || ''}"`
-      ];
-      csvRows.push(row.join(','));
+    filteredData.forEach((item, index) => {
+      const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+      
+      let statusColor = '#ffffff';
+      let statusTextColor = '#374151';
+      if(item.status === 'Selesai') { statusColor = '#dcfce7'; statusTextColor = '#166534'; }
+      else if(item.status === 'Tayang') { statusColor = '#dbeafe'; statusTextColor = '#1e40af'; }
+      else if(item.status === 'Batal') { statusColor = '#fee2e2'; statusTextColor = '#991b1b'; }
+      else if(item.status === 'Menunggu Konten') { statusColor = '#fef3c7'; statusTextColor = '#92400e'; }
+
+      tableHtml += `
+            <tr style="background-color: ${bgColor};">
+              <td style="font-weight: bold;">${item.nama_kol || '-'}</td>
+              <td style="text-align: center; color: #2563eb;">${item.platform || '-'}</td>
+              <td style="text-align: center;">${item.tingkat || '-'}</td>
+              <td style="text-align: center;">${item.jadwal_tayang ? new Date(item.jadwal_tayang).toLocaleDateString('id-ID') : '-'}</td>
+              <td style="background-color: ${statusColor}; color: ${statusTextColor}; font-weight: bold; text-align: center;">${item.status || '-'}</td>
+              <td style="text-align: right;">${item.biaya || 0}</td>
+              <td>${item.link_hasil || '-'}</td>
+              <td style="text-align: center;">${item.pic || '-'}</td>
+            </tr>
+      `;
     });
 
-    const csvString = csvRows.join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    tableHtml += `
+          </table>
+        </body>
+      </html>
+    `;
+
+    const blob = new Blob([tableHtml], { type: 'application/vnd.ms-excel' });
     const url = URL.createObjectURL(blob);
     
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `Laporan_KOL_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Laporan_KOL_${new Date().toISOString().split('T')[0]}.xls`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -222,8 +278,8 @@ const KOL = () => {
           <p className="text-muted" style={{ marginTop: '0.25rem' }}>Pantau kerjasama, jadwal tayang, dan budget influencer.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button className="btn-secondary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <FiDownload /> Export CSV
+          <button className="btn-secondary" onClick={handleExportExcel} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#10b981', color: 'white', borderColor: '#10b981' }}>
+            <FiDownload /> Export Excel
           </button>
           <button className="action-btn" onClick={() => handleOpenModal()}>
             <FiPlus /> Tambah KOL
