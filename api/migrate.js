@@ -124,49 +124,24 @@ export default async function handler(req, res) {
       );
     `;
 
-    // 2. Clear existing data (optional, but good for fresh migration)
-    await sql`TRUNCATE TABLE users RESTART IDENTITY CASCADE`;
-    await sql`TRUNCATE TABLE monitoring_pekerjaan RESTART IDENTITY CASCADE`;
-    await sql`TRUNCATE TABLE technical_issues RESTART IDENTITY CASCADE`;
-    await sql`TRUNCATE TABLE evaluations RESTART IDENTITY CASCADE`;
-    await sql`TRUNCATE TABLE notifications RESTART IDENTITY CASCADE`;
-
-    // 3. Seed Users Data
-    for (const user of teamData) {
-      await sql`
-        INSERT INTO users (name, role, username, password, email)
-        VALUES (${user.name}, ${user.role}, ${user.username}, ${user.password}, ${user.username + '@creativestebido.local'})
-      `;
-    }
-
-    // 4. Seed Monitoring Data
-    for (const item of monitoringData) {
-      await sql`
-        INSERT INTO monitoring_pekerjaan 
-        (week, produk, link_konten, tanggal_konten, judul_konten, jenis_konten, ratio, funnel, executor_cwm, pic_konten, status)
-        VALUES 
-        (${item.week}, ${item.produk}, ${item.linkKonten}, ${item.tanggalKonten}, ${item.judulKonten}, ${item.jenisKonten}, ${item.ratio}, ${item.funnel}, ${item.executorCWM}, ${item.picKonten}, ${item.status || 'Selesai'})
-      `;
-    }
-
-    // 4. Seed Technical Issues
-    for (const item of technicalIssues) {
-      await sql`
-        INSERT INTO technical_issues (issue, severity, status)
-        VALUES (${item.issue}, ${item.severity}, ${item.status})
-      `;
-    }
-
-    // 5. Seed Initial Evaluation
     await sql`
-      INSERT INTO evaluations (week, notes)
-      VALUES (
-        'Minggu Ke-2, Juni 2026', 
-        '["CTR Video Edukasi meningkat 2% setelah thumbnail diganti.", "Tim skripter sudah memenuhi target mingguan.", "Perlu perbaikan pada server hosting karena sempat down 2 jam."]'::jsonb
-      )
+      CREATE TABLE IF NOT EXISTS assets (
+        id SERIAL PRIMARY KEY,
+        nama_aset VARCHAR(255) NOT NULL,
+        kategori VARCHAR(50) NOT NULL,
+        jumlah INTEGER DEFAULT 1,
+        pemegang_aset VARCHAR(255),
+        status VARCHAR(50) DEFAULT 'Aktif',
+        tanggal_masuk VARCHAR(50),
+        keterangan TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `;
 
-    return res.status(200).json({ message: 'Database migrated and seeded successfully!' });
+    // Removed TRUNCATE and INSERT operations to protect production data.
+    // The tables are created safely using IF NOT EXISTS.
+    
+    return res.status(200).json({ message: 'Database migrated successfully without altering existing data!' });
   } catch (error) {
     console.error('Migration error:', error);
     return res.status(500).json({ error: 'Migration failed', details: error.message });
