@@ -61,11 +61,11 @@ const Performance = () => {
     setFormData(prev => {
       const updates = {};
       
-      if (budget > 0 && kontak > 0) updates.biayaKontak = formatRp(budget / kontak);
-      if (budget > 0 && closing > 0) updates.cac = formatRp(budget / closing);
-      if (budget > 0 && klikTautan > 0) updates.cpc = formatRp(budget / klikTautan);
-      if (klikTautan > 0 && tayanganLandas > 0) updates.rasioLandas = formatPercent(tayanganLandas / klikTautan);
-      if (budget > 0 && tayanganLandas > 0) updates.biayaLandas = formatRp(budget / tayanganLandas);
+      updates.biayaKontak = (budget > 0 && kontak > 0) ? formatRp(budget / kontak) : '';
+      updates.cac = (budget > 0 && closing > 0) ? formatRp(budget / closing) : '';
+      updates.cpc = (budget > 0 && klikTautan > 0) ? formatRp(budget / klikTautan) : '';
+      updates.rasioLandas = (klikTautan > 0 && tayanganLandas > 0) ? formatPercent(tayanganLandas / klikTautan) : '';
+      updates.biayaLandas = (budget > 0 && tayanganLandas > 0) ? formatRp(budget / tayanganLandas) : '';
       
       let hasChanges = false;
       Object.keys(updates).forEach(k => {
