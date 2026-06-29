@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { FiHome, FiCalendar, FiUsers, FiTrendingUp, FiAward, FiAlertCircle, FiTool, FiCheckSquare, FiSettings, FiSun, FiMoon, FiLogOut, FiBox } from 'react-icons/fi';
+import { FiHome, FiCalendar, FiUsers, FiTrendingUp, FiAward, FiAlertCircle, FiTool, FiCheckSquare, FiSettings, FiSun, FiMoon, FiLogOut, FiBox, FiFolder, FiFileText } from 'react-icons/fi';
 import Dashboard from './pages/Dashboard';
 import Monitoring from './pages/Monitoring';
 import Productivity from './pages/Productivity';
@@ -10,6 +10,7 @@ import Technical from './pages/Technical';
 import Evaluation from './pages/Evaluation';
 import Settings from './pages/Settings';
 import Aset from './pages/Aset.jsx';
+import KOL from './pages/KOL.jsx';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import NotificationBell from './components/NotificationBell';
@@ -38,8 +39,9 @@ const Layout = ({ children, theme, toggleTheme }) => {
     { path: '/performance', name: 'Performa Konten', icon: <FiTrendingUp /> },
     { path: '/winning', name: 'Winning Content', icon: <FiAward /> },
     { path: '/technical', name: 'Kendala Teknis', icon: <FiTool /> },
-    { path: '/assets', name: 'Management Aset', icon: <FiBox /> },
     { path: '/evaluation', name: 'Evaluasi & Rekomendasi', icon: <FiCheckSquare /> },
+    { path: '/kol', name: 'Divisi KOL', icon: <FiUsers /> },
+    { path: '/aset', name: 'Management Aset', icon: <FiBox /> },
     { path: '/settings', name: 'Pengaturan', icon: <FiSettings /> },
   ];
 

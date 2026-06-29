@@ -31,6 +31,7 @@ export const contentPerformance = [];
 export const winningContent = [];
 export const notWinningContent = [];
 export const technicalIssues = [];
+export const kolData = [];
 
 // Data untuk Grafik Produktivitas (Recharts)
 export const chartData = [
