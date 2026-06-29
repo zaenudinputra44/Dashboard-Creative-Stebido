@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { kolData as initialData, teamData } from '../data/dummyData';
-import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiExternalLink, FiX, FiUsers, FiDollarSign } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiExternalLink, FiX, FiUsers, FiDollarSign, FiDownload } from 'react-icons/fi';
 import '../tables.css';
 
 const KOL = () => {
@@ -175,6 +175,41 @@ const KOL = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    if (filteredData.length === 0) {
+      alert("Tidak ada data untuk diekspor.");
+      return;
+    }
+
+    const headers = ["Nama KOL", "Platform", "Tingkat", "Jadwal Tayang", "Status", "Biaya (Rp)", "Link Hasil", "PIC Internal"];
+    const csvRows = [headers.join(',')];
+
+    filteredData.forEach(item => {
+      const row = [
+        `"${item.nama_kol || ''}"`,
+        `"${item.platform || ''}"`,
+        `"${item.tingkat || ''}"`,
+        `"${item.jadwal_tayang ? new Date(item.jadwal_tayang).toLocaleDateString('id-ID') : '-'}"`,
+        `"${item.status || ''}"`,
+        `"${item.biaya || 0}"`,
+        `"${item.link_hasil || ''}"`,
+        `"${item.pic || ''}"`
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Laporan_KOL_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // KPI Calculations
   const totalActiveKol = data.filter(item => item.status !== 'Batal').length;
   const totalBudgetSpent = data.reduce((acc, curr) => acc + (parseFloat(curr.biaya) || 0), 0);
@@ -186,9 +221,14 @@ const KOL = () => {
           <h2>Divisi KOL (Influencer)</h2>
           <p className="text-muted" style={{ marginTop: '0.25rem' }}>Pantau kerjasama, jadwal tayang, dan budget influencer.</p>
         </div>
-        <button className="action-btn" onClick={() => handleOpenModal()}>
-          <FiPlus /> Tambah KOL
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button className="btn-secondary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FiDownload /> Export CSV
+          </button>
+          <button className="action-btn" onClick={() => handleOpenModal()}>
+            <FiPlus /> Tambah KOL
+          </button>
+        </div>
       </div>
 
       <div className="kpi-grid mb-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
