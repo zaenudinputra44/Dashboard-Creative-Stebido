@@ -5,16 +5,6 @@ import { FiTrendingUp, FiCopy, FiCheck, FiPlus } from 'react-icons/fi';
 const Winning = () => {
   const [data, setData] = useState([]);
   const [copiedId, setCopiedId] = useState(null);
-  
-  // State form
-  const [newTitle, setNewTitle] = useState('');
-  const [newAdId, setNewAdId] = useState('');
-  const [newCtr, setNewCtr] = useState('');
-  const [newSales, setNewSales] = useState('');
-  const [newBudget, setNewBudget] = useState('');
-  const [newRoas, setNewRoas] = useState('');
-  const [newFactor, setNewFactor] = useState('');
-  const [isFetchingMeta, setIsFetchingMeta] = useState(false);
 
   const fetchData = () => {
     fetch('/api/winning')
@@ -45,99 +35,6 @@ const Winning = () => {
     }, 2000);
   };
 
-  const handleFetchMetaAds = async () => {
-    if (!newAdId) {
-      alert('Masukkan Ad ID terlebih dahulu!');
-      return;
-    }
-    setIsFetchingMeta(true);
-    try {
-      const res = await fetch('/api/meta_sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adId: newAdId })
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Gagal menarik data Meta');
-      
-      const { ctr, transactions, spend, roas } = result.data;
-      setNewCtr(ctr);
-      setNewSales(transactions);
-      setNewBudget(spend);
-      setNewRoas(roas);
-      alert('Berhasil tersinkronisasi dengan Meta Ads!');
-    } catch (err) {
-      alert(err.message);
-      // Fallback simulasi jika gagal atau tidak ada token
-      setNewCtr((Math.random() * 5 + 1).toFixed(2));
-      setNewSales(Math.floor(Math.random() * 100) + 10);
-      setNewBudget(Math.floor(Math.random() * 1000000) + 100000);
-      setNewRoas((Math.random() * 3 + 1).toFixed(2));
-    }
-    setIsFetchingMeta(false);
-  };
-
-  const handleAddSubmit = async (e) => {
-    e.preventDefault();
-    if (!newTitle) return;
-
-    try {
-      const payload = {
-        title: newTitle,
-        adId: newAdId,
-        ctr: newCtr || '0.00',
-        transactions: newSales || '0',
-        budgetSpent: newBudget || '0',
-        roas: newRoas || '0.00',
-        faktorSukses: newFactor || 'Tidak ada keterangan',
-        skalaTindakan: 'Scale Up Budget'
-      };
-
-      const res = await fetch('/api/winning', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (!res.ok) throw new Error('Gagal simpan ke DB');
-      
-      setNewTitle('');
-      setNewAdId('');
-      setNewCtr('');
-      setNewSales('');
-      setNewBudget('');
-      setNewRoas('');
-      setNewFactor('');
-      fetchData(); // Refresh UI langsung
-    } catch (err) {
-      console.warn('Mode Lokal: Menyimpan ke localStorage');
-      const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
-      const newItem = {
-        id: newId,
-        title: newTitle + ' (Local)',
-        adId: newAdId,
-        ctr: newCtr || '0.00',
-        transactions: newSales || '0',
-        budgetSpent: newBudget || '0',
-        roas: newRoas || '0.00',
-        faktorSukses: newFactor || 'Tidak ada keterangan',
-        skalaTindakan: 'Scale Up Budget'
-      };
-
-      const updatedData = [newItem, ...data];
-      setData(updatedData);
-      localStorage.setItem('winningData', JSON.stringify(updatedData));
-
-      setNewTitle('');
-      setNewAdId('');
-      setNewCtr('');
-      setNewSales('');
-      setNewBudget('');
-      setNewRoas('');
-      setNewFactor('');
-    }
-  };
-
   const handleDelete = async (id) => {
     if (!window.confirm('Yakin ingin menghapus data ini?')) return;
     
@@ -157,49 +54,7 @@ const Winning = () => {
     <div className="page-container">
       <div className="mb-4">
         <h2>Winning Content</h2>
-        <p className="text-muted" style={{ marginTop: '0.5rem' }}>Konten dengan performa terbaik bulan ini. Replikasi pola suksesnya.</p>
-      </div>
-
-      <div className="card mb-4">
-        <h3 className="card-title mb-4" style={{ fontSize: '1.1rem' }}>Tambah Winning Content Manual</h3>
-        <form onSubmit={handleAddSubmit} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Judul Konten</label>
-            <input type="text" className="filter-input" style={{ width: '100%' }} value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Masukkan judul..." required />
-          </div>
-          <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Ad ID / Campaign ID</label>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input type="text" className="filter-input" style={{ width: '100%' }} value={newAdId} onChange={(e) => setNewAdId(e.target.value)} placeholder="Opsional" />
-              <button type="button" className="action-btn secondary" onClick={handleFetchMetaAds} disabled={isFetchingMeta}>
-                {isFetchingMeta ? 'Menarik...' : 'Tarik Meta'}
-              </button>
-            </div>
-          </div>
-          <div style={{ flex: '1 1 100px' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Budget (Rp)</label>
-            <input type="number" className="filter-input" style={{ width: '100%' }} value={newBudget} onChange={(e) => setNewBudget(e.target.value)} placeholder="0" />
-          </div>
-          <div style={{ flex: '1 1 100px' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>CTR (%)</label>
-            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newCtr} onChange={(e) => setNewCtr(e.target.value)} placeholder="3.50" />
-          </div>
-          <div style={{ flex: '1 1 100px' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Sales</label>
-            <input type="number" className="filter-input" style={{ width: '100%' }} value={newSales} onChange={(e) => setNewSales(e.target.value)} placeholder="0" />
-          </div>
-          <div style={{ flex: '1 1 100px' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>ROAS</label>
-            <input type="number" step="0.01" className="filter-input" style={{ width: '100%' }} value={newRoas} onChange={(e) => setNewRoas(e.target.value)} placeholder="2.5" />
-          </div>
-          <div style={{ flex: '1 1 250px' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Faktor Sukses</label>
-            <input type="text" className="filter-input" style={{ width: '100%' }} value={newFactor} onChange={(e) => setNewFactor(e.target.value)} placeholder="Contoh: Hook kuat" />
-          </div>
-          <button type="submit" className="action-btn" style={{ minWidth: '120px', justifyContent: 'center' }}>
-            <FiPlus /> Simpan
-          </button>
-        </form>
+        <p className="text-muted" style={{ marginTop: '0.5rem' }}>Konten dengan performa terbaik bulan ini. Data ini disinkronisasikan langsung dari menu Performa Konten.</p>
       </div>
 
       <div className="dashboard-main-grid">
