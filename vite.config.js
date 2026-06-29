@@ -68,4 +68,7 @@ const vercelDevServer = () => {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), vercelDevServer()],
+  build: {
+    chunkSizeWarningLimit: 1000
+  }
 })
