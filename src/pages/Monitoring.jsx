@@ -201,6 +201,33 @@ const Monitoring = () => {
     }
   };
 
+  const getUserStyle = (name) => {
+    if (!name) return { padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px', cursor: 'pointer' };
+    
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const colors = [
+      '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', 
+      '#10b981', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', 
+      '#8b5cf6', '#d946ef', '#f43f5e'
+    ];
+    const baseColor = colors[Math.abs(hash) % colors.length];
+    
+    return {
+      padding: '0.35rem', 
+      borderRadius: '4px', 
+      border: `1px solid ${baseColor}50`, 
+      backgroundColor: `${baseColor}15`, 
+      color: baseColor,
+      fontWeight: '600',
+      width: '100%', 
+      minWidth: '120px', 
+      cursor: 'pointer'
+    };
+  };
+
 
   return (
     <div className="page-container" style={{ position: 'relative' }}>
@@ -310,7 +337,7 @@ const Monitoring = () => {
                   <select 
                     value={item.executorCWM || ''} 
                     onChange={(e) => handleInlineChange(item, 'executorCWM', e.target.value)}
-                    style={{ padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px', cursor: 'pointer' }}
+                    style={getUserStyle(item.executorCWM)}
                   >
                     <option value="" disabled>-- Pilih --</option>
                     {teamMembers.map(user => (
@@ -325,7 +352,7 @@ const Monitoring = () => {
                   <select 
                     value={item.picKonten || ''} 
                     onChange={(e) => handleInlineChange(item, 'picKonten', e.target.value)}
-                    style={{ padding: '0.35rem', borderRadius: '4px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', width: '100%', minWidth: '120px', cursor: 'pointer' }}
+                    style={getUserStyle(item.picKonten)}
                   >
                     <option value="" disabled>-- Pilih --</option>
                     {teamMembers.map(user => (
