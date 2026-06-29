@@ -312,13 +312,13 @@ const Performance = () => {
       </div>
 
       {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: '600px' }}>
+        <div className="modal-overlay" style={{ padding: '1rem' }}>
+          <div className="modal-content" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             <div className="modal-header">
               <h3>Tambah Data Performa Konten</h3>
               <button className="close-btn" onClick={() => setIsModalOpen(false)}><FiX /></button>
             </div>
-            <form onSubmit={handleSaveManual}>
+            <form onSubmit={handleSaveManual} style={{ padding: '1.5rem', overflowY: 'auto' }}>
               <div className="form-group" style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Judul Konten</label>
                 <input type="text" name="title" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.title} onChange={handleInputChange} required />
