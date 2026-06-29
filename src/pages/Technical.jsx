@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { technicalIssues as initialData } from '../data/dummyData';
-import { FiCheckCircle, FiTool, FiPlus, FiX, FiTrash2 } from 'react-icons/fi';
+import { FiCheckCircle, FiTool, FiPlus, FiX, FiTrash2, FiInfo } from 'react-icons/fi';
 
 const Technical = () => {
   const [issues, setIssues] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newIssue, setNewIssue] = useState({ issue: '', severity: 'Rendah' });
+  const [detailIssue, setDetailIssue] = useState(null);
 
   useEffect(() => {
     fetch('/api/technical')
@@ -107,15 +108,24 @@ const Technical = () => {
               <span className={`badge ${item.status === 'Selesai' ? 'badge-success' : 'badge-gray'}`}>
                 {item.status}
               </span>
-              {item.status !== 'Selesai' && (
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <button 
                   className="action-btn secondary"
-                  onClick={() => handleMarkResolved(item.id)}
+                  onClick={() => setDetailIssue(item)}
                   style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
                 >
-                  <FiCheckCircle /> Selesai
+                  <FiInfo /> Detail
                 </button>
-              )}
+                {item.status !== 'Selesai' && (
+                  <button 
+                    className="action-btn"
+                    onClick={() => handleMarkResolved(item.id)}
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', backgroundColor: 'var(--success-color)' }}
+                  >
+                    <FiCheckCircle /> Selesai
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -163,6 +173,47 @@ const Technical = () => {
                 <button type="submit" className="login-button mt-0" style={{ marginTop: 0 }}>Simpan</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {detailIssue && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h3>Detail Kendala Teknis</h3>
+              <button className="modal-close" onClick={() => setDetailIssue(null)}><FiX size={24} /></button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>ID Kendala</div>
+                <div style={{ fontWeight: '500' }}>#{detailIssue.id}</div>
+              </div>
+              
+              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Status Penyelesaian</div>
+                <span className={`badge ${detailIssue.status === 'Selesai' ? 'badge-success' : 'badge-gray'}`}>
+                  {detailIssue.status}
+                </span>
+              </div>
+
+              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Tingkat Keparahan</div>
+                <span className={`badge ${detailIssue.severity === 'Kritis' ? 'badge-danger' : detailIssue.severity === 'Tinggi' ? 'badge-warning' : detailIssue.severity === 'Sedang' ? 'badge-info' : 'badge-gray'}`}>
+                  {detailIssue.severity}
+                </span>
+              </div>
+
+              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Rincian Kendala</div>
+                <div style={{ lineHeight: '1.6', color: 'var(--text-main)', whiteSpace: 'pre-wrap' }}>
+                  {detailIssue.issue}
+                </div>
+              </div>
+            </div>
+            <div className="modal-actions mt-4">
+              <button className="login-button mt-0" style={{ width: '100%', marginTop: '1rem' }} onClick={() => setDetailIssue(null)}>Tutup</button>
+            </div>
           </div>
         </div>
       )}
