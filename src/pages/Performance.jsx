@@ -62,7 +62,7 @@ const Performance = () => {
       const updates = {};
       
       updates.biayaKontak = (budget > 0 && kontak > 0) ? formatRp(budget / kontak) : '';
-      updates.cac = (budget > 0 && closing > 0) ? formatRp(budget / closing) : '';
+      updates.cac = (kontak > 0 && closing > 0) ? formatPercent(closing / kontak) : '';
       updates.cpc = (budget > 0 && klikTautan > 0) ? formatRp(budget / klikTautan) : '';
       updates.rasioLandas = (klikTautan > 0 && tayanganLandas > 0) ? formatPercent(tayanganLandas / klikTautan) : '';
       updates.biayaLandas = (budget > 0 && tayanganLandas > 0) ? formatRp(budget / tayanganLandas) : '';
@@ -102,7 +102,7 @@ const Performance = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    const currencyFields = ['budget', 'biayaKontak', 'cac', 'cpm', 'cpc', 'biayaLandas'];
+    const currencyFields = ['budget', 'biayaKontak', 'cpm', 'cpc', 'biayaLandas'];
     const numberFields = ['kontak', 'closing', 'klikTautan', 'tayanganLandas'];
     
     if (currencyFields.includes(name)) {
@@ -416,7 +416,7 @@ const Performance = () => {
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>CAC</label>
-                  <input type="text" name="cac" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.cac} onChange={handleInputChange} placeholder="Contoh: Rp 225.555" />
+                  <input type="text" name="cac" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.cac} onChange={handleInputChange} placeholder="Contoh: 61,84%" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>CPM</label>
