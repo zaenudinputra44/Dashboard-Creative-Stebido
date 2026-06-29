@@ -1,4 +1,4 @@
-import { sql } from './db.js';
+import { sql } from './_db.js';
 import nodemailer from 'nodemailer';
 
 export default async function handler(req, res) {

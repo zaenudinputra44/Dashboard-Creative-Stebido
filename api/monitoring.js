@@ -1,4 +1,4 @@
-import { sql } from './db.js';
+import { sql } from './_db.js';
 
 const mapRow = (row) => ({
   id: row.id,
