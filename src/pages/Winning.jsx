@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { winningContent } from '../data/dummyData';
-import { FiTrendingUp, FiCopy, FiCheck, FiPlus } from 'react-icons/fi';
+import { FiTrendingUp, FiPlus } from 'react-icons/fi';
 
 const Winning = () => {
   const [data, setData] = useState([]);
-  const [copiedId, setCopiedId] = useState(null);
 
   const fetchData = () => {
     fetch('/api/winning')
@@ -28,12 +27,7 @@ const Winning = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleDuplicate = (id) => {
-    setCopiedId(id);
-    setTimeout(() => {
-      setCopiedId(null);
-    }, 2000);
-  };
+
 
   const handleDelete = async (id) => {
     if (!window.confirm('Yakin ingin menghapus data ini?')) return;
@@ -117,13 +111,6 @@ const Winning = () => {
                   <span className="text-muted" style={{ fontSize: '0.875rem' }}>Tindakan Skalasi:</span>
                   <span className="badge badge-warning">{item.skalaTindakan || 'Scale Up Budget'}</span>
                 </div>
-                <button 
-                  className={`action-btn ${copiedId === item.id ? 'secondary' : ''}`} 
-                  style={{ width: '100%', justifyContent: 'center', backgroundColor: copiedId === item.id ? 'var(--success-color)' : '', color: copiedId === item.id ? 'white' : '' }}
-                  onClick={() => handleDuplicate(item.id)}
-                >
-                  {copiedId === item.id ? <><FiCheck /> Berhasil Diduplikasi</> : <><FiCopy /> Duplikat Konten Ini</>}
-                </button>
               </div>
             </div>
           ))
