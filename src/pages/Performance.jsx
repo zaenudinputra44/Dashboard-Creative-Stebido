@@ -9,8 +9,6 @@ const Performance = () => {
   const [filterRatio, setFilterRatio] = useState('All');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-
   // State untuk form manual
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
