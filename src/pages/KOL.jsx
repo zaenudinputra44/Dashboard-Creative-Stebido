@@ -175,95 +175,117 @@ const KOL = () => {
     }
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (filteredData.length === 0) {
       alert("Tidak ada data untuk diekspor.");
       return;
     }
 
-    let tableHtml = `
-      <html xmlns:x="urn:schemas-microsoft-com:office:excel">
-        <head>
-          <meta charset="utf-8">
-          <style>
-            table { border-collapse: collapse; font-family: sans-serif; }
-            th { 
-              background-color: #4f46e5; 
-              color: #ffffff; 
-              font-weight: bold; 
-              border: 1px solid #c7d2fe; 
-              padding: 10px;
-              text-align: center;
-            }
-            td { 
-              border: 1px solid #e5e7eb; 
-              padding: 8px; 
-              vertical-align: middle;
-            }
-            .title {
-              font-size: 18px;
-              font-weight: bold;
-              text-align: center;
-              color: #374151;
-            }
-          </style>
-        </head>
-        <body>
-          <table>
-            <tr><td colspan="8" class="title">Laporan Data KOL (Influencer)</td></tr>
-            <tr><td colspan="8" style="text-align: center; color: #6b7280;">Dicetak pada: ${new Date().toLocaleString('id-ID')}</td></tr>
-            <tr><td colspan="8"></td></tr>
-            <tr>
-              <th>Nama KOL</th>
-              <th>Platform</th>
-              <th>Tingkat</th>
-              <th>Jadwal Tayang</th>
-              <th>Status</th>
-              <th>Biaya (Rp)</th>
-              <th>Link Hasil</th>
-              <th>PIC Internal</th>
-            </tr>
-    `;
+    try {
+      // Dynamic import to keep bundle size small
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('Data KOL');
 
-    filteredData.forEach((item, index) => {
-      const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
-      
-      let statusColor = '#ffffff';
-      let statusTextColor = '#374151';
-      if(item.status === 'Selesai') { statusColor = '#dcfce7'; statusTextColor = '#166534'; }
-      else if(item.status === 'Tayang') { statusColor = '#dbeafe'; statusTextColor = '#1e40af'; }
-      else if(item.status === 'Batal') { statusColor = '#fee2e2'; statusTextColor = '#991b1b'; }
-      else if(item.status === 'Menunggu Konten') { statusColor = '#fef3c7'; statusTextColor = '#92400e'; }
+      // Add Title
+      sheet.mergeCells('A1:H1');
+      const titleCell = sheet.getCell('A1');
+      titleCell.value = 'Laporan Data KOL (Influencer)';
+      titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
-      tableHtml += `
-            <tr style="background-color: ${bgColor};">
-              <td style="font-weight: bold;">${item.nama_kol || '-'}</td>
-              <td style="text-align: center; color: #2563eb;">${item.platform || '-'}</td>
-              <td style="text-align: center;">${item.tingkat || '-'}</td>
-              <td style="text-align: center;">${item.jadwal_tayang ? new Date(item.jadwal_tayang).toLocaleDateString('id-ID') : '-'}</td>
-              <td style="background-color: ${statusColor}; color: ${statusTextColor}; font-weight: bold; text-align: center;">${item.status || '-'}</td>
-              <td style="text-align: right;">${item.biaya || 0}</td>
-              <td>${item.link_hasil || '-'}</td>
-              <td style="text-align: center;">${item.pic || '-'}</td>
-            </tr>
-      `;
-    });
+      sheet.mergeCells('A2:H2');
+      const dateCell = sheet.getCell('A2');
+      dateCell.value = `Dicetak pada: ${new Date().toLocaleString('id-ID')}`;
+      dateCell.font = { size: 10, color: { argb: 'FF6B7280' } };
+      dateCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
-    tableHtml += `
-          </table>
-        </body>
-      </html>
-    `;
+      sheet.addRow([]); // Blank row
 
-    const blob = new Blob([tableHtml], { type: 'application/vnd.ms-excel' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Laporan_KOL_${new Date().toISOString().split('T')[0]}.xls`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      // Headers
+      const headers = ["Nama KOL", "Platform", "Tingkat", "Jadwal Tayang", "Status", "Biaya (Rp)", "Link Hasil", "PIC Internal"];
+      const headerRow = sheet.addRow(headers);
+      headerRow.eachCell((cell) => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFC7D2FE' } },
+          left: { style: 'thin', color: { argb: 'FFC7D2FE' } },
+          bottom: { style: 'thin', color: { argb: 'FFC7D2FE' } },
+          right: { style: 'thin', color: { argb: 'FFC7D2FE' } }
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      });
+
+      // Columns width
+      sheet.columns = [
+        { width: 25 }, { width: 15 }, { width: 20 }, { width: 15 },
+        { width: 20 }, { width: 18 }, { width: 30 }, { width: 20 }
+      ];
+
+      // Data Rows
+      filteredData.forEach((item, index) => {
+        const row = sheet.addRow([
+          item.nama_kol || '-',
+          item.platform || '-',
+          item.tingkat || '-',
+          item.jadwal_tayang ? new Date(item.jadwal_tayang).toLocaleDateString('id-ID') : '-',
+          item.status || '-',
+          Number(item.biaya || 0),
+          item.link_hasil || '-',
+          item.pic || '-'
+        ]);
+
+        const isEven = index % 2 === 0;
+        const rowBgColor = isEven ? 'FFFFFFFF' : 'FFF9FAFB';
+
+        let statusBgColor = 'FFFFFFFF';
+        let statusTextColor = 'FF374151';
+        if(item.status === 'Selesai') { statusBgColor = 'FFDCFCE7'; statusTextColor = 'FF166534'; }
+        else if(item.status === 'Tayang') { statusBgColor = 'FFDBEAFE'; statusTextColor = 'FF1E40AF'; }
+        else if(item.status === 'Batal') { statusBgColor = 'FFFEE2E2'; statusTextColor = 'FF991B1B'; }
+        else if(item.status === 'Menunggu Konten') { statusBgColor = 'FFFEF3C7'; statusTextColor = 'FF92400E'; }
+
+        row.eachCell((cell, colNumber) => {
+          // Base border
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
+          };
+          
+          cell.alignment = { vertical: 'middle' };
+          
+          if (colNumber === 1) cell.font = { bold: true };
+          if (colNumber === 2) { cell.alignment.horizontal = 'center'; cell.font = { color: { argb: 'FF2563EB' } }; }
+          if (colNumber === 3 || colNumber === 4 || colNumber === 8) cell.alignment.horizontal = 'center';
+          if (colNumber === 6) { cell.numFmt = '"Rp"#,##0'; }
+          
+          // Status column styling
+          if (colNumber === 5) {
+            cell.alignment.horizontal = 'center';
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: statusBgColor } };
+            cell.font = { bold: true, color: { argb: statusTextColor } };
+          } else {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowBgColor } };
+          }
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Laporan_KOL_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Gagal export excel", err);
+      alert("Gagal melakukan export file Excel.");
+    }
   };
 
   // KPI Calculations
