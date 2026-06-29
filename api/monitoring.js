@@ -51,12 +51,10 @@ export default async function handler(req, res) {
 
       if (status === 'Selesai' && !wasSelesai) {
         try {
-          const leaders = await sql`SELECT name FROM users WHERE role IN ('Leader Content Web Marketing', 'Supervisor')`;
+          const allUsers = await sql`SELECT name FROM users`;
           
           const recipients = new Set();
-          if (executorCWM) recipients.add(executorCWM);
-          if (picKonten) recipients.add(picKonten);
-          leaders.forEach(u => recipients.add(u.name));
+          allUsers.forEach(u => recipients.add(u.name));
           
           const title = "Pekerjaan Selesai!";
           const message = `Pekerjaan "${judulKonten}" telah diselesaikan oleh ${executorCWM}.`;
