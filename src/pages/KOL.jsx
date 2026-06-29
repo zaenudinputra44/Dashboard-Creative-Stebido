@@ -345,7 +345,7 @@ const KOL = () => {
                     <option value="Nano (1k-10k)">Nano (1k-10k)</option>
                     <option value="Micro (10k-100k)">Micro (10k-100k)</option>
                     <option value="Macro (100k-1M)">Macro (100k-1M)</option>
-                    <option value="Mega (>1M)">Mega (>1M)</option>
+                    <option value="Mega (>1M)">Mega (&gt;1M)</option>
                   </select>
                 </div>
               </div>
