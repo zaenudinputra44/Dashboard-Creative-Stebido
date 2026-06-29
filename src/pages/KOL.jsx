@@ -230,6 +230,7 @@ const KOL = () => {
           <option value="YouTube">YouTube</option>
           <option value="X">X (Twitter)</option>
           <option value="Meta">Meta</option>
+          <option value="All Kanal">All Kanal</option>
         </select>
         <select className="filter-input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
           <option value="All">Semua Status</option>
@@ -339,6 +340,7 @@ const KOL = () => {
                     <option value="YouTube">YouTube</option>
                     <option value="X">X (Twitter)</option>
                     <option value="Meta">Meta</option>
+                    <option value="All Kanal">All Kanal</option>
                   </select>
                 </div>
                 <div className="form-group">
