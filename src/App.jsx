@@ -15,6 +15,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import NotificationBell from './components/NotificationBell';
 import './App.css';
 
+// Force Cache Busting - v2
+
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useAuth();
