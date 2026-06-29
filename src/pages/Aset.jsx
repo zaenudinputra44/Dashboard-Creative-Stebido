@@ -80,6 +80,7 @@ const Aset = () => {
         pemegang_aset: '',
         status: 'Aktif',
         tanggal_masuk: new Date().toISOString().split('T')[0],
+        tanggal_kadaluwarsa: '',
         keterangan: ''
       });
     }
@@ -234,7 +235,8 @@ const Aset = () => {
                 <th>Jumlah</th>
                 <th>Pemegang Aset (PIC)</th>
                 <th>Status</th>
-                <th>Tanggal Masuk</th>
+                <th>Tgl Masuk</th>
+                <th>Tgl Kadaluwarsa</th>
                 <th>Keterangan</th>
                 <th>Aksi</th>
               </tr>
@@ -265,6 +267,7 @@ const Aset = () => {
                     </span>
                   </td>
                   <td>{item.tanggal_masuk || '-'}</td>
+                  <td>{item.tanggal_kadaluwarsa || '-'}</td>
                   <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {item.keterangan || '-'}
                   </td>
@@ -278,7 +281,7 @@ const Aset = () => {
               ))}
               {filteredData.length === 0 && (
                 <tr>
-                  <td colSpan="9" style={{ textAlign: 'center', padding: '2rem' }}>Tidak ada data aset ditemukan.</td>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '2rem' }}>Tidak ada data aset ditemukan.</td>
                 </tr>
               )}
             </tbody>
@@ -329,6 +332,11 @@ const Aset = () => {
                   <label>Tanggal Masuk / Beli</label>
                   <input type="date" name="tanggal_masuk" value={formData.tanggal_masuk} onChange={handleInputChange} className="login-input" />
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label>Tanggal Kadaluwarsa (Opsional)</label>
+                <input type="date" name="tanggal_kadaluwarsa" value={formData.tanggal_kadaluwarsa} onChange={handleInputChange} className="login-input" />
               </div>
 
               <div className="form-group">

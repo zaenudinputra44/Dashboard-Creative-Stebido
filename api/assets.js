@@ -19,10 +19,10 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const { nama_aset, kategori, jumlah, pemegang_aset, status, tanggal_masuk, keterangan } = req.body;
+      const { nama_aset, kategori, jumlah, pemegang_aset, status, tanggal_masuk, tanggal_kadaluwarsa, keterangan } = req.body;
       const data = await sql`
-        INSERT INTO assets (nama_aset, kategori, jumlah, pemegang_aset, status, tanggal_masuk, keterangan)
-        VALUES (${nama_aset}, ${kategori}, ${jumlah}, ${pemegang_aset}, ${status}, ${tanggal_masuk}, ${keterangan})
+        INSERT INTO assets (nama_aset, kategori, jumlah, pemegang_aset, status, tanggal_masuk, tanggal_kadaluwarsa, keterangan)
+        VALUES (${nama_aset}, ${kategori}, ${jumlah}, ${pemegang_aset}, ${status}, ${tanggal_masuk}, ${tanggal_kadaluwarsa}, ${keterangan})
         RETURNING *
       `;
       return res.status(201).json(data[0]);
@@ -33,14 +33,14 @@ export default async function handler(req, res) {
 
   if (req.method === 'PUT') {
     try {
-      const { id, nama_aset, kategori, jumlah, pemegang_aset, status, tanggal_masuk, keterangan } = req.body;
+      const { id, nama_aset, kategori, jumlah, pemegang_aset, status, tanggal_masuk, tanggal_kadaluwarsa, keterangan } = req.body;
       if (!id) return res.status(400).json({ error: 'ID is required' });
 
       const data = await sql`
         UPDATE assets
         SET nama_aset = ${nama_aset}, kategori = ${kategori}, jumlah = ${jumlah}, 
             pemegang_aset = ${pemegang_aset}, status = ${status}, tanggal_masuk = ${tanggal_masuk}, 
-            keterangan = ${keterangan}
+            tanggal_kadaluwarsa = ${tanggal_kadaluwarsa}, keterangan = ${keterangan}
         WHERE id = ${id}
         RETURNING *
       `;
