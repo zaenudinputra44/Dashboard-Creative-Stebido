@@ -178,25 +178,37 @@ const Performance = () => {
 
   const handleMakeWinning = async (item) => {
     if (!window.confirm(`Jadikan "${item.title}" sebagai Winning Content?`)) return;
+    
+    // Sinkronisasi data dari Performa ke Winning
+    const payload = {
+      title: item.title,
+      adId: item.metaLink || '-',
+      ctr: (item.ctrManual || '0').replace('%', ''), // Menghilangkan persen untuk disimpan
+      transactions: item.closing || '0',
+      budgetSpent: item.budget ? item.budget.replace(/\D/g, '') : 0, // Ambil angka murninya
+      roas: item.roas || '0',
+      faktorSukses: 'Dipindah otomatis dari Performa Konten',
+      skalaTindakan: 'Scale Up Budget'
+    };
+
     try {
-      const payload = {
-        title: item.title,
-        adId: item.metaLink,
-        ctr: item.ctr,
-        transactions: item.transactions,
-        budgetSpent: 0,
-        roas: item.roas,
-        faktorSukses: 'Dipindah otomatis dari Performa Konten',
-        skalaTindakan: 'Scale Up Budget'
-      };
-      await fetch('/api/winning', {
+      const res = await fetch('/api/winning', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      alert('Berhasil dipindahkan ke Winning Content!');
+      if (!res.ok) throw new Error('Gagal memindahkan ke DB');
+      alert('Berhasil disinkronkan ke Winning Content!');
     } catch (err) {
-      alert('Gagal memindahkan data.');
+      // Fallback ke localStorage
+      const saved = localStorage.getItem('winningData');
+      const winningList = saved ? JSON.parse(saved) : [];
+      const newId = winningList.length > 0 ? Math.max(...winningList.map(d => d.id)) + 1 : 1;
+      const newData = { id: newId, ...payload };
+      winningList.unshift(newData);
+      localStorage.setItem('winningData', JSON.stringify(winningList));
+      
+      alert('Berhasil disinkronkan ke Winning Content (Mode Lokal)!');
     }
   };
 
