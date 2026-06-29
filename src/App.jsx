@@ -9,7 +9,7 @@ import Winning from './pages/Winning';
 import Technical from './pages/Technical';
 import Evaluation from './pages/Evaluation';
 import Settings from './pages/Settings';
-import Assets from './pages/Assets';
+import Aset from './pages/Aset.jsx';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import NotificationBell from './components/NotificationBell';
@@ -128,7 +128,7 @@ const AppRoutes = () => {
               <Route path="/performance" element={<Performance />} />
               <Route path="/winning" element={<Winning />} />
               <Route path="/technical" element={<Technical />} />
-              <Route path="/assets" element={<Assets />} />
+              <Route path="/assets" element={<Aset />} />
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>

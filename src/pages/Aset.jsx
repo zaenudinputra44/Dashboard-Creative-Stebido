@@ -3,7 +3,7 @@ import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiX, FiBox } from 'react-icons/fi'
 import { teamData } from '../data/dummyData.js';
 import '../tables.css';
 
-const Assets = () => {
+const Aset = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -378,4 +378,4 @@ const Assets = () => {
   );
 };
 
-export default Assets;
+export default Aset;
