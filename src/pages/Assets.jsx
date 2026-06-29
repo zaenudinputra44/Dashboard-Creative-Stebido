@@ -180,7 +180,7 @@ const Assets = () => {
   return (
     <div className="page-container" style={{ position: 'relative' }}>
       <div className="flex-between mb-4">
-        <h2><FiBox style={{ marginRight: '0.5rem' }} /> Manajemen Aset</h2>
+        <h2><FiBox style={{ marginRight: '0.5rem' }} /> Management Aset</h2>
         <button className="action-btn" onClick={() => handleOpenModal()}>
           <FiPlus /> Tambah Aset
         </button>

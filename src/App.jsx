@@ -36,7 +36,7 @@ const Layout = ({ children, theme, toggleTheme }) => {
     { path: '/performance', name: 'Performa Konten', icon: <FiTrendingUp /> },
     { path: '/winning', name: 'Winning Content', icon: <FiAward /> },
     { path: '/technical', name: 'Kendala Teknis', icon: <FiTool /> },
-    { path: '/assets', name: 'Manajemen Aset', icon: <FiBox /> },
+    { path: '/assets', name: 'Management Aset', icon: <FiBox /> },
     { path: '/evaluation', name: 'Evaluasi & Rekomendasi', icon: <FiCheckSquare /> },
     { path: '/settings', name: 'Pengaturan', icon: <FiSettings /> },
   ];
