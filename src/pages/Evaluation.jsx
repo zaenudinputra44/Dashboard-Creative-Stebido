@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiCheckSquare, FiSave } from 'react-icons/fi';
+import { FiCheckSquare, FiSquare, FiSave, FiTrash2 } from 'react-icons/fi';
 
 const Evaluation = () => {
   const [evaluations, setEvaluations] = useState([]);
@@ -53,6 +53,43 @@ const Evaluation = () => {
     setNewEval({ week: '', note1: '', note2: '' });
   };
 
+  const handleToggleCheck = async (evalId, notesArray, noteIndex) => {
+    const updatedNotes = notesArray.map((note, idx) => {
+      if (idx === noteIndex) {
+        const isObject = typeof note === 'object' && note !== null;
+        return isObject 
+          ? { ...note, checked: !note.checked } 
+          : { text: note, checked: true };
+      }
+      return note;
+    });
+
+    setEvaluations(prev => prev.map(ev => 
+      ev.id === evalId ? { ...ev, notes: updatedNotes } : ev
+    ));
+
+    try {
+      await fetch('/api/evaluation', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: evalId, notes: updatedNotes })
+      });
+    } catch (err) {
+      console.warn("Gagal update checked status", err);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Yakin ingin menghapus evaluasi ini?')) return;
+    try {
+      const res = await fetch(`/api/evaluation?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Gagal menghapus evaluasi');
+      setEvaluations(prev => prev.filter(e => e.id !== id));
+    } catch (err) {
+      setEvaluations(prev => prev.filter(e => e.id !== id));
+    }
+  };
+
   return (
     <div className="page-container">
       <div className="mb-4">
@@ -73,17 +110,48 @@ const Evaluation = () => {
             }
 
             return (
-              <div className="card" key={evalItem.id}>
-                <h3 className="card-title" style={{ color: 'var(--primary-color)', fontSize: '1.1rem', marginBottom: '1rem' }}>
+              <div className="card" key={evalItem.id} style={{ position: 'relative' }}>
+                <h3 className="card-title" style={{ color: 'var(--primary-color)', fontSize: '1.1rem', marginBottom: '1rem', paddingRight: '2rem' }}>
                   Evaluasi {evalItem.week}
                 </h3>
+                
+                <button 
+                  onClick={() => handleDelete(evalItem.id)}
+                  style={{ position: 'absolute', top: '1.2rem', right: '1.2rem', background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontSize: '1.1rem' }}
+                  title="Hapus Evaluasi"
+                >
+                  <FiTrash2 />
+                </button>
+
                 <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingLeft: '0.5rem' }}>
-                  {notesArray.map((note, idx) => (
-                    <li key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                      <FiCheckSquare style={{ color: 'var(--success-color)', marginTop: '0.25rem', flexShrink: 0 }} />
-                      <span style={{ fontSize: '0.9rem' }}>{note}</span>
-                    </li>
-                  ))}
+                  {notesArray.map((note, idx) => {
+                    const isObject = typeof note === 'object' && note !== null;
+                    const text = isObject ? note.text : note;
+                    const isChecked = isObject ? note.checked : false;
+
+                    return (
+                      <li key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                        <div 
+                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                          onClick={() => handleToggleCheck(evalItem.id, notesArray, idx)}
+                        >
+                          {isChecked ? (
+                            <FiCheckSquare style={{ color: 'var(--success-color)', marginTop: '0.25rem', flexShrink: 0, fontSize: '1.1rem' }} />
+                          ) : (
+                            <FiSquare style={{ color: 'var(--border-color)', marginTop: '0.25rem', flexShrink: 0, fontSize: '1.1rem' }} />
+                          )}
+                        </div>
+                        <span style={{ 
+                          fontSize: '0.9rem', 
+                          textDecoration: isChecked ? 'line-through' : 'none', 
+                          color: isChecked ? 'var(--text-muted)' : 'inherit',
+                          flex: 1
+                        }}>
+                          {text}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             );
