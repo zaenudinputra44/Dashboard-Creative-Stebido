@@ -259,40 +259,109 @@ const Performance = () => {
     return sortConfig.direction === 'asc' ? <FiChevronUp /> : <FiChevronDown />;
   };
 
-  const handleExportCSV = () => {
-    const headers = ["Judul Konten", "Link Konten", "Budget", "Kontak", "Biaya Kontak", "Closing", "CAC", "CPM", "CPC", "CTR", "Klik Tautan", "Tayangan Landas", "ROAS", "Rasio Landas", "Biaya Landas"];
-    
-    const csvRows = [
-      headers.join(","),
-      ...processedData.map(item => [
-        `"${item.title}"`,
-        `"${item.metaLink || '-'}"`,
-        `"${item.budget || '-'}"`,
-        `"${item.kontak || '-'}"`,
-        `"${item.biayaKontak || '-'}"`,
-        `"${item.closing || '-'}"`,
-        `"${item.cac || '-'}"`,
-        `"${item.cpm || '-'}"`,
-        `"${item.cpc || '-'}"`,
-        `"${item.ctrManual || '-'}"`,
-        `"${item.klikTautan || '-'}"`,
-        `"${item.tayanganLandas || '-'}"`,
-        `"${item.roas || '-'}"`,
-        `"${item.rasioLandas || '-'}"`,
-        `"${item.biayaLandas || '-'}"`
-      ].join(","))
-    ];
+  const handleExportExcel = async () => {
+    if (processedData.length === 0) {
+      alert("Tidak ada data untuk diekspor.");
+      return;
+    }
 
-    const csvContent = csvRows.join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "Laporan_Performa_Konten.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('Performa Konten');
+
+      // Add Title
+      sheet.mergeCells('A1:P1');
+      const titleCell = sheet.getCell('A1');
+      titleCell.value = 'Laporan Performa Konten';
+      titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      sheet.mergeCells('A2:P2');
+      const dateCell = sheet.getCell('A2');
+      dateCell.value = `Dicetak pada: ${new Date().toLocaleString('id-ID')}`;
+      dateCell.font = { size: 10, color: { argb: 'FF6B7280' } };
+      dateCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      sheet.addRow([]); // Blank row
+
+      // Headers
+      const headers = ["No.", "Judul Konten", "Link Konten", "Budget", "Kontak", "Biaya Kontak", "Closing", "CAC", "CPM", "CPC", "CTR", "Klik Tautan", "Tayangan Landas", "ROAS", "Rasio Landas", "Biaya Landas"];
+      const headerRow = sheet.addRow(headers);
+      headerRow.eachCell((cell) => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FF000000' } },
+          left: { style: 'thin', color: { argb: 'FF000000' } },
+          bottom: { style: 'thin', color: { argb: 'FF000000' } },
+          right: { style: 'thin', color: { argb: 'FF000000' } }
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      });
+
+      // Columns width
+      sheet.columns = [
+        { width: 5 }, { width: 35 }, { width: 30 }, { width: 18 }, { width: 10 },
+        { width: 18 }, { width: 10 }, { width: 12 }, { width: 15 }, { width: 15 },
+        { width: 12 }, { width: 15 }, { width: 20 }, { width: 10 }, { width: 15 }, { width: 18 }
+      ];
+
+      // Data Rows
+      processedData.forEach((item, index) => {
+        const row = sheet.addRow([
+          index + 1,
+          item.title || '-',
+          item.metaLink || '-',
+          item.budget || '-',
+          item.kontak || '-',
+          item.biayaKontak || '-',
+          item.closing || '-',
+          item.cac || '-',
+          item.cpm || '-',
+          item.cpc || '-',
+          item.ctrManual || '-',
+          item.klikTautan || '-',
+          item.tayanganLandas || '-',
+          item.roas || '-',
+          item.rasioLandas || '-',
+          item.biayaLandas || '-'
+        ]);
+
+        const isEven = index % 2 === 0;
+        const rowBgColor = isEven ? 'FFFFFFFF' : 'FFF9FAFB';
+
+        row.eachCell((cell, colNumber) => {
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
+          };
+          
+          cell.alignment = { vertical: 'middle' };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowBgColor } };
+          
+          if (colNumber === 1) { cell.alignment.horizontal = 'center'; cell.font = { bold: true }; }
+          if (colNumber === 2) { cell.font = { bold: true }; }
+          if (colNumber === 3) { cell.font = { color: { argb: 'FF2563EB' } }; } 
+          if (colNumber >= 4) { cell.alignment.horizontal = 'center'; } 
+        });
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Laporan_Performa_Konten_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Gagal export excel", err);
+      alert("Gagal melakukan export file Excel.");
+    }
   };
 
   return (
@@ -303,8 +372,8 @@ const Performance = () => {
           <button className="action-btn" onClick={() => setIsModalOpen(true)}>
             <FiPlus /> Tambah Data
           </button>
-          <button className="action-btn secondary" onClick={handleExportCSV}>
-            <FiDownload /> Export CSV
+          <button className="action-btn secondary" onClick={handleExportExcel} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#10b981', color: 'white', borderColor: '#10b981' }}>
+            <FiDownload /> Export Excel
           </button>
         </div>
       </div>
