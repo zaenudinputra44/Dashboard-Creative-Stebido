@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiPlus, FiSearch, FiEdit2, FiTrash2, FiX, FiBox } from 'react-icons/fi';
-import { teamData } from '../data/dummyData';
+import { teamData } from '../data/dummyData.js';
 import '../tables.css';
 
 const Assets = () => {
