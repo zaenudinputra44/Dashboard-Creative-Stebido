@@ -97,20 +97,6 @@ const Winning = () => {
                     <div className="font-medium">{item.transactions}</div>
                   </div>
                 </div>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <span className="text-muted" style={{ fontSize: '0.875rem' }}>Faktor Sukses:</span>
-                  <span className="font-medium" style={{ fontSize: '0.875rem', lineHeight: '1.4' }}>
-                    {item.faktorSukses || 'Tidak ada analisis'}
-                  </span>
-                </div>
-              </div>
-
-              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem', display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <span className="text-muted" style={{ fontSize: '0.875rem' }}>Tindakan Skalasi:</span>
-                  <span className="badge badge-warning">{item.skalaTindakan || 'Scale Up Budget'}</span>
-                </div>
               </div>
             </div>
           ))
