@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { FiSearch, FiDownload, FiChevronDown, FiChevronUp, FiLink, FiRefreshCw } from 'react-icons/fi';
+import { FiSearch, FiDownload, FiChevronDown, FiChevronUp, FiLink, FiRefreshCw, FiPlus, FiX } from 'react-icons/fi';
 import '../tables.css';
 
 const Performance = () => {
@@ -9,9 +9,21 @@ const Performance = () => {
   const [filterRatio, setFilterRatio] = useState('All');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
-  // State untuk form tambah data Meta Ads
-  const [newLink, setNewLink] = useState('');
-  const [isFetching, setIsFetching] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  // State untuk form manual
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    metaLink: '',
+    funnel: 'Cold',
+    ratio: '1:1',
+    impressions: '',
+    clicks: '',
+    transactions: '',
+    roas: ''
+  });
 
   // Load dari API Vercel / Neon DB
   const fetchData = () => {
@@ -36,32 +48,25 @@ const Performance = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleFetchMetaAds = async (e) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveManual = async (e) => {
     e.preventDefault();
-    if (!newLink) return;
-
-    setIsFetching(true);
-
-    const impressions = Math.floor(Math.random() * 100000) + 10000;
-    const clicks = Math.floor(impressions * (Math.random() * 0.05 + 0.01)); // 1-6% CTR
-    const ctr = ((clicks / impressions) * 100).toFixed(2);
-    const transactions = Math.floor(clicks * (Math.random() * 0.05 + 0.005)); // 0.5-5.5% CVR
-    const conversionRate = transactions > 0 ? ((transactions / clicks) * 100).toFixed(2) : '0.00';
-    const roas = (Math.random() * 4 + 0.5).toFixed(1); // 0.5x - 4.5x ROAS
-
-    const funnels = ['Cold', 'Warm', 'Hot'];
-    const ratios = ['1:1', '4:5', '9:16'];
-
+    setIsSaving(true);
+    
     try {
       const payload = {
-        title: `Konten Hasil Sync #${Math.floor(Math.random() * 1000)}`,
-        metaLink: newLink,
-        funnel: funnels[Math.floor(Math.random() * funnels.length)],
-        ratio: ratios[Math.floor(Math.random() * ratios.length)],
-        impressions,
-        clicks,
-        transactions,
-        roas
+        title: formData.title,
+        metaLink: formData.metaLink,
+        funnel: formData.funnel,
+        ratio: formData.ratio,
+        impressions: parseInt(formData.impressions || 0, 10),
+        clicks: parseInt(formData.clicks || 0, 10),
+        transactions: parseInt(formData.transactions || 0, 10),
+        roas: parseFloat(formData.roas || 0).toFixed(2)
       };
 
       const res = await fetch('/api/performance', {
@@ -72,33 +77,38 @@ const Performance = () => {
 
       if (!res.ok) throw new Error('Gagal simpan ke DB');
       
-      setNewLink('');
-      setIsFetching(false);
+      setIsModalOpen(false);
+      setFormData({ title: '', metaLink: '', funnel: 'Cold', ratio: '1:1', impressions: '', clicks: '', transactions: '', roas: '' });
       fetchData(); // Refresh UI langsung
     } catch (err) {
       console.warn('Mode Lokal: Menyimpan ke localStorage karena DB tidak tersedia');
       
       const newId = data.length > 0 ? Math.max(...data.map(d => d.id)) + 1 : 1;
+      const ctr = formData.impressions ? ((formData.clicks / formData.impressions) * 100).toFixed(2) : '0.00';
+      const conversionRate = formData.clicks ? ((formData.transactions / formData.clicks) * 100).toFixed(2) : '0.00';
+      
       const newData = {
         id: newId,
-        title: `Konten Hasil Sync (Local) #${newId}`,
-        funnel: funnels[Math.floor(Math.random() * funnels.length)],
-        ratio: ratios[Math.floor(Math.random() * ratios.length)],
-        impressions,
-        clicks,
+        title: formData.title,
+        funnel: formData.funnel,
+        ratio: formData.ratio,
+        impressions: parseInt(formData.impressions || 0, 10),
+        clicks: parseInt(formData.clicks || 0, 10),
         ctr,
-        transactions,
+        transactions: parseInt(formData.transactions || 0, 10),
         conversionRate,
-        roas,
-        metaLink: newLink
+        roas: parseFloat(formData.roas || 0).toFixed(2),
+        metaLink: formData.metaLink
       };
 
       const updatedData = [newData, ...data];
       setData(updatedData);
       localStorage.setItem('performanceData_v2', JSON.stringify(updatedData));
       
-      setNewLink('');
-      setIsFetching(false);
+      setIsModalOpen(false);
+      setFormData({ title: '', metaLink: '', funnel: 'Cold', ratio: '1:1', impressions: '', clicks: '', transactions: '', roas: '' });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -219,33 +229,14 @@ const Performance = () => {
     <div className="page-container">
       <div className="flex-between mb-4">
         <h2>Performa Konten</h2>
-        <button className="action-btn secondary" onClick={handleExportCSV}>
-          <FiDownload /> Export CSV
-        </button>
-      </div>
-
-      <div className="card mb-4">
-        <h3 className="card-title mb-4" style={{ fontSize: '1.1rem' }}>Sinkronisasi Meta Ads API (Real-Time)</h3>
-        <p className="text-muted" style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>
-          Masukkan <strong>Ad ID</strong> atau <strong>Campaign ID</strong> dari Meta Ads. Sistem akan memanggil Graph API secara langsung. Pastikan Anda telah mengatur API Token di menu Pengaturan.
-        </p>
-        <form onSubmit={handleFetchMetaAds} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1', minWidth: '300px' }}>
-            <label style={{ fontSize: '0.875rem', marginBottom: '0.5rem', display: 'block' }}>Ad ID / Campaign ID</label>
-            <input 
-              type="text" 
-              className="filter-input" 
-              style={{ width: '100%' }} 
-              placeholder="Contoh: 12020293939..." 
-              value={newLink}
-              onChange={(e) => setNewLink(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit" className="action-btn" disabled={isFetching} style={{ minWidth: '150px', justifyContent: 'center' }}>
-            {isFetching ? <><FiRefreshCw className="spin" /> Menarik Data API...</> : <><FiLink /> Tarik Data Meta</>}
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button className="action-btn" onClick={() => setIsModalOpen(true)}>
+            <FiPlus /> Tambah Data
           </button>
-        </form>
+          <button className="action-btn secondary" onClick={handleExportCSV}>
+            <FiDownload /> Export CSV
+          </button>
+        </div>
       </div>
 
       <div className="filters-bar">
@@ -347,6 +338,71 @@ const Performance = () => {
           </tbody>
         </table>
       </div>
+
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '600px' }}>
+            <div className="modal-header">
+              <h3>Tambah Data Performa Konten</h3>
+              <button className="close-btn" onClick={() => setIsModalOpen(false)}><FiX /></button>
+            </div>
+            <form onSubmit={handleSaveManual}>
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Judul Konten</label>
+                <input type="text" name="title" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.title} onChange={handleInputChange} required />
+              </div>
+              <div className="form-group" style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Link Referensi / Meta Link (Opsional)</label>
+                <input type="text" name="metaLink" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.metaLink} onChange={handleInputChange} />
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Funnel</label>
+                  <select name="funnel" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.funnel} onChange={handleInputChange}>
+                    <option value="Cold">Cold</option>
+                    <option value="Warm">Warm</option>
+                    <option value="Hot">Hot</option>
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Ratio</label>
+                  <select name="ratio" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.ratio} onChange={handleInputChange}>
+                    <option value="1:1">1:1</option>
+                    <option value="4:5">4:5</option>
+                    <option value="9:16">9:16</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Impressions</label>
+                  <input type="number" name="impressions" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.impressions} onChange={handleInputChange} required />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Clicks</label>
+                  <input type="number" name="clicks" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.clicks} onChange={handleInputChange} required />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Konversi (Transactions)</label>
+                  <input type="number" name="transactions" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.transactions} onChange={handleInputChange} required />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>ROAS</label>
+                  <input type="number" step="0.01" name="roas" className="filter-input" style={{ width: '100%', boxSizing: 'border-box' }} value={formData.roas} onChange={handleInputChange} required />
+                </div>
+              </div>
+              <div className="modal-footer" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                <button type="button" className="action-btn secondary" onClick={() => setIsModalOpen(false)}>Batal</button>
+                <button type="submit" className="action-btn" disabled={isSaving}>
+                  {isSaving ? 'Menyimpan...' : 'Simpan Data'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
