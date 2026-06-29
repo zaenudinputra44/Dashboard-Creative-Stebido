@@ -188,13 +188,13 @@ const KOL = () => {
       const sheet = workbook.addWorksheet('Data KOL');
 
       // Add Title
-      sheet.mergeCells('A1:H1');
+      sheet.mergeCells('A1:I1');
       const titleCell = sheet.getCell('A1');
       titleCell.value = 'Laporan Data KOL (Influencer)';
       titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
       titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
-      sheet.mergeCells('A2:H2');
+      sheet.mergeCells('A2:I2');
       const dateCell = sheet.getCell('A2');
       dateCell.value = `Dicetak pada: ${new Date().toLocaleString('id-ID')}`;
       dateCell.font = { size: 10, color: { argb: 'FF6B7280' } };
@@ -203,29 +203,30 @@ const KOL = () => {
       sheet.addRow([]); // Blank row
 
       // Headers
-      const headers = ["Nama KOL", "Platform", "Tingkat", "Jadwal Tayang", "Status", "Biaya (Rp)", "Link Hasil", "PIC Internal"];
+      const headers = ["No.", "Nama KOL", "Platform", "Tingkat", "Jadwal Tayang", "Status", "Biaya (Rp)", "Link Hasil", "PIC Internal"];
       const headerRow = sheet.addRow(headers);
       headerRow.eachCell((cell) => {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
         cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
         cell.border = {
-          top: { style: 'thin', color: { argb: 'FFC7D2FE' } },
-          left: { style: 'thin', color: { argb: 'FFC7D2FE' } },
-          bottom: { style: 'thin', color: { argb: 'FFC7D2FE' } },
-          right: { style: 'thin', color: { argb: 'FFC7D2FE' } }
+          top: { style: 'thin', color: { argb: 'FF000000' } },
+          left: { style: 'thin', color: { argb: 'FF000000' } },
+          bottom: { style: 'thin', color: { argb: 'FF000000' } },
+          right: { style: 'thin', color: { argb: 'FF000000' } }
         };
         cell.alignment = { vertical: 'middle', horizontal: 'center' };
       });
 
       // Columns width
       sheet.columns = [
-        { width: 25 }, { width: 15 }, { width: 20 }, { width: 15 },
+        { width: 5 }, { width: 25 }, { width: 15 }, { width: 20 }, { width: 15 },
         { width: 20 }, { width: 18 }, { width: 30 }, { width: 20 }
       ];
 
       // Data Rows
       filteredData.forEach((item, index) => {
         const row = sheet.addRow([
+          index + 1,
           item.nama_kol || '-',
           item.platform || '-',
           item.tingkat || '-',
@@ -249,21 +250,22 @@ const KOL = () => {
         row.eachCell((cell, colNumber) => {
           // Base border
           cell.border = {
-            top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-            left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-            bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-            right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
+            top: { style: 'thin', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
           };
           
           cell.alignment = { vertical: 'middle' };
           
-          if (colNumber === 1) cell.font = { bold: true };
-          if (colNumber === 2) { cell.alignment.horizontal = 'center'; cell.font = { color: { argb: 'FF2563EB' } }; }
-          if (colNumber === 3 || colNumber === 4 || colNumber === 8) cell.alignment.horizontal = 'center';
-          if (colNumber === 6) { cell.numFmt = '"Rp"#,##0'; }
+          if (colNumber === 1) { cell.alignment.horizontal = 'center'; cell.font = { bold: true }; }
+          if (colNumber === 2) { cell.font = { bold: true }; }
+          if (colNumber === 3) { cell.alignment.horizontal = 'center'; cell.font = { color: { argb: 'FF2563EB' } }; }
+          if (colNumber === 4 || colNumber === 5 || colNumber === 9) cell.alignment.horizontal = 'center';
+          if (colNumber === 7) { cell.numFmt = '"Rp"#,##0'; }
           
           // Status column styling
-          if (colNumber === 5) {
+          if (colNumber === 6) {
             cell.alignment.horizontal = 'center';
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: statusBgColor } };
             cell.font = { bold: true, color: { argb: statusTextColor } };
