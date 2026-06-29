@@ -130,7 +130,7 @@ const AppRoutes = () => {
               <Route path="/performance" element={<Performance />} />
               <Route path="/winning" element={<Winning />} />
               <Route path="/technical" element={<Technical />} />
-              <Route path="/assets" element={<Aset />} />
+              <Route path="/aset" element={<Aset />} />
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/kol" element={<KOL />} />
               <Route path="/settings" element={<Settings />} />
