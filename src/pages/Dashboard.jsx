@@ -184,7 +184,7 @@ const Dashboard = () => {
           </div>
 
           <div className="card chart-section">
-            <h3 className="card-title">Grafik Produktivitas KOL (Top 5 Influencer)</h3>
+            <h3 className="card-title">Grafik Produktivitas KOL</h3>
             <div className="chart-container">
               {dynamicKolChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
