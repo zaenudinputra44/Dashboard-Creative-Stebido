@@ -145,9 +145,11 @@ const AppRoutes = () => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
+      <ErrorBoundary>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </ErrorBoundary>
     </AuthProvider>
   );
 }
