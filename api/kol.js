@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
-      const data = await sql`SELECT * FROM kol_reports ORDER BY id DESC`;
+      const data = await sql`SELECT * FROM kol_reports ORDER BY tanggal DESC, id DESC`;
       return res.status(200).json(data);
     } 
     else if (req.method === 'POST') {
