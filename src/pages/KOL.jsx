@@ -8,14 +8,6 @@ const KOL = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [teamMembers, setTeamMembers] = useState(teamData);
-  const [activeTab, setActiveTab] = useState('endors_stebido');
-
-  const sheets = {
-    'endors_stebido': { title: 'Endors Stebido' },
-    'macro_micro': { title: 'Macro & Micro Stebido' },
-    'afiliator': { title: 'Afiliator Stebido' },
-    'endors_dokter': { title: 'Endors Dokter Stebido' }
-  };
 
   const fetchData = () => {
     fetch('/api/kol')
@@ -67,10 +59,11 @@ const KOL = () => {
     link_upload_story: '',
     all_upload: false,
     diiklankan: false,
-    kategori: activeTab
+    kategori: 'endors_stebido'
   });
 
-  const tabData = data.filter(item => (item.kategori || 'endors_stebido') === activeTab);
+  // Remove tab filtering, show all data
+  const tabData = data;
 
   const filteredData = tabData.filter(item => {
     const matchesSearch = (item.nama_produk || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -99,7 +92,7 @@ const KOL = () => {
         link_upload_story: '',
         all_upload: false,
         diiklankan: false,
-        kategori: activeTab
+        kategori: 'endors_stebido'
       });
     }
     setIsModalOpen(true);
@@ -223,7 +216,7 @@ const KOL = () => {
       // Add Title
       sheet.mergeCells('A1:M1');
       const titleCell = sheet.getCell('A1');
-      titleCell.value = `Laporan Data KOL - ${sheets[activeTab].title}`;
+      titleCell.value = `Laporan Data KOL`;
       titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
       titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
@@ -278,7 +271,7 @@ const KOL = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Laporan_${activeTab}_${new Date().toISOString().split('T')[0]}.xlsx`);
+      link.setAttribute('download', `Laporan_KOL_${new Date().toISOString().split('T')[0]}.xlsx`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -319,18 +312,6 @@ const KOL = () => {
             <FiPlus /> Tambah KOL
           </button>
         </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: '1.5rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
-        {Object.entries(sheets).map(([key, sheet]) => (
-          <button 
-            key={key}
-            onClick={() => setActiveTab(key)}
-            style={{ background: 'none', border: 'none', borderBottom: activeTab === key ? '2px solid var(--primary-color)' : 'none', color: activeTab === key ? 'var(--primary-color)' : 'var(--text-muted)', fontWeight: activeTab === key ? '600' : 'normal', padding: '0.5rem 0', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '1rem', transition: 'all 0.2s' }}
-          >
-            {sheet.title}
-          </button>
-        ))}
       </div>
 
       <div className="kpi-grid mb-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
