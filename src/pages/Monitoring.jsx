@@ -592,6 +592,7 @@ const Monitoring = () => {
                         <option value="Affiliate">Affiliate</option>
                         <option value="Barter Value">Barter Value</option>
                         <option value="UGC">UGC</option>
+                        <option value="Buzzer">Buzzer</option>
                       </select>
                     </div>
                     <div className="form-group">
