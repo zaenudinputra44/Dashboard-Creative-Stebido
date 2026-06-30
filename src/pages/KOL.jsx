@@ -555,6 +555,16 @@ const KOL = () => {
     );
   };
 
+  const renderLink = (link) => {
+    if (!link || link === '-') return '-';
+    let href = String(link).trim();
+    if (href === '') return '-';
+    if (!href.startsWith('http://') && !href.startsWith('https://')) {
+      href = 'https://' + href;
+    }
+    return <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', textDecoration: 'underline', fontWeight: '500' }} onClick={e => e.stopPropagation()}>Link</a>;
+  };
+
   return (
     <div className="page-container">
       <div className="flex-between mb-4">
