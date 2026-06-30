@@ -5,34 +5,42 @@ import '../tables.css';
 
 const KOL = () => {
   const [data, setData] = useState([]); // for META & MARKETPLACE
-  const [tiktokData, setTiktokData] = useState([]); // for TIKTOK
+  const [tiktokData, setTiktokData] = useState([]); // for TIKTOK Data KOL
+  const [tiktokReportData, setTiktokReportData] = useState([]); // for TIKTOK Report Konten
   const [isLoading, setIsLoading] = useState(true);
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMonth, setFilterMonth] = useState('All');
   const [filterYear, setFilterYear] = useState('All');
+  
   const [activePlatform, setActivePlatform] = useState('META');
+  const [activeTiktokTab, setActiveTiktokTab] = useState('Data KOL');
   const [teamMembers, setTeamMembers] = useState(teamData);
 
   const fetchData = () => {
     // Fetch normal data
     fetch('/api/kol')
       .then(res => res.ok ? res.json() : [])
-      .then(dbData => {
-        setData(dbData);
-        setIsLoading(false);
-      })
-      .catch(err => {
-        setData([]);
-        setIsLoading(false);
-      });
+      .then(dbData => setData(dbData))
+      .catch(err => setData([]));
 
     // Fetch TikTok data
     fetch('/api/kol-tiktok')
       .then(res => res.ok ? res.json() : [])
-      .then(tData => {
-        setTiktokData(tData);
-      })
+      .then(tData => setTiktokData(tData))
       .catch(err => console.warn('Gagal memuat data TikTok', err));
+
+    // Fetch TikTok Report Konten
+    fetch('/api/kol-tiktok-report')
+      .then(res => res.ok ? res.json() : [])
+      .then(rData => {
+        setTiktokReportData(rData);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.warn('Gagal memuat data TikTok Report', err);
+        setIsLoading(false);
+      });
   };
 
   const fetchUsers = () => {
@@ -62,13 +70,21 @@ const KOL = () => {
 
   // Filter Logic
   const getFilteredData = () => {
-    let sourceData = activePlatform === 'TIKTOK' ? tiktokData : data.filter(item => (item.platform || 'META') === activePlatform);
+    let sourceData = [];
+    if (activePlatform === 'TIKTOK') {
+      sourceData = activeTiktokTab === 'Report Konten' ? tiktokReportData : tiktokData;
+    } else {
+      sourceData = data.filter(item => (item.platform || 'META') === activePlatform);
+    }
     
     return sourceData.filter(item => {
-      // Search logic differs slightly between schemas
       let searchString = '';
       if (activePlatform === 'TIKTOK') {
-        searchString = `${item.nama_talent || ''} ${item.link_akun_tiktok || ''} ${item.notes || ''}`.toLowerCase();
+        if (activeTiktokTab === 'Report Konten') {
+          searchString = `${item.nama_talent || ''} ${item.pic || ''} ${item.link_sosmed || ''} ${item.kode_boost || ''}`.toLowerCase();
+        } else {
+          searchString = `${item.nama_talent || ''} ${item.link_akun_tiktok || ''} ${item.notes || ''}`.toLowerCase();
+        }
       } else {
         searchString = `${item.nama_produk || ''} ${item.nama_akun || ''} ${item.pic_kol || ''}`.toLowerCase();
       }
@@ -77,7 +93,9 @@ const KOL = () => {
       
       let matchesDate = true;
       if (filterMonth !== 'All' || filterYear !== 'All') {
-        const dateStr = item.tanggal || item.created_at || '';
+        const dateField = activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten' ? item.date_post_tiktok : item.tanggal;
+        const dateStr = dateField || item.created_at || '';
+        
         if (dateStr) {
           const dateObj = new Date(dateStr);
           if (filterYear !== 'All' && dateObj.getFullYear().toString() !== filterYear) matchesDate = false;
@@ -94,24 +112,50 @@ const KOL = () => {
   const handleOpenModal = (item = null) => {
     if (item) {
       setEditingItem(item);
-      const formattedDate = item.tanggal ? new Date(item.tanggal).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-      setFormData({ ...item, tanggal: formattedDate });
+      const dateField = activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten' ? item.date_post_tiktok : item.tanggal;
+      const formattedDate = dateField ? new Date(dateField).toISOString().split('T')[0] : '';
+      
+      if (activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten') {
+        setFormData({ ...item, date_post_tiktok: formattedDate });
+      } else {
+        setFormData({ ...item, tanggal: formattedDate });
+      }
     } else {
       setEditingItem(null);
       
       if (activePlatform === 'TIKTOK') {
-        setFormData({
-          tanggal: new Date().toISOString().split('T')[0],
-          nama_talent: '',
-          kategori_talent: 'Macro',
-          link_akun_tiktok: '',
-          ratecard: '',
-          keterangan_sow: '',
-          periode_owning: 'Selamanya',
-          acc_kerjasama: false,
-          notes: '',
-          rc_foto: ''
-        });
+        if (activeTiktokTab === 'Report Konten') {
+          setFormData({
+            pic: '',
+            nama_talent: '',
+            platform: 'TIKTOK',
+            link_sosmed: '',
+            brief: '',
+            draft_video: '',
+            draft_foto: '',
+            feedback_1: '',
+            status_1: 'Draft',
+            revised_draft_video_1: '',
+            feedback_2: '',
+            status_2: '',
+            link_post_tiktok: '',
+            date_post_tiktok: new Date().toISOString().split('T')[0],
+            kode_boost: ''
+          });
+        } else {
+          setFormData({
+            tanggal: new Date().toISOString().split('T')[0],
+            nama_talent: '',
+            kategori_talent: 'Macro',
+            link_akun_tiktok: '',
+            ratecard: '',
+            keterangan_sow: '',
+            periode_owning: 'Selamanya',
+            acc_kerjasama: false,
+            notes: '',
+            rc_foto: ''
+          });
+        }
       } else {
         setFormData({
           tanggal: new Date().toISOString().split('T')[0],
@@ -167,7 +211,11 @@ const KOL = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const endpoint = activePlatform === 'TIKTOK' ? '/api/kol-tiktok' : '/api/kol';
+    let endpoint = '/api/kol';
+    if (activePlatform === 'TIKTOK') {
+      endpoint = activeTiktokTab === 'Report Konten' ? '/api/kol-tiktok-report' : '/api/kol-tiktok';
+    }
+
     try {
       if (editingItem) {
         const res = await fetch(endpoint, {
@@ -195,7 +243,11 @@ const KOL = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-      const endpoint = activePlatform === 'TIKTOK' ? '/api/kol-tiktok' : '/api/kol';
+      let endpoint = '/api/kol';
+      if (activePlatform === 'TIKTOK') {
+        endpoint = activeTiktokTab === 'Report Konten' ? '/api/kol-tiktok-report' : '/api/kol-tiktok';
+      }
+
       try {
         const res = await fetch(`${endpoint}?id=${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Gagal menghapus data');
@@ -209,13 +261,19 @@ const KOL = () => {
   const handleInlineChange = async (item, field, newValue) => {
     const updatedItem = { ...item, [field]: newValue };
     
+    let endpoint = '/api/kol';
     if (activePlatform === 'TIKTOK') {
-      setTiktokData(prev => prev.map(d => d.id === item.id ? updatedItem : d));
+      if (activeTiktokTab === 'Report Konten') {
+        setTiktokReportData(prev => prev.map(d => d.id === item.id ? updatedItem : d));
+        endpoint = '/api/kol-tiktok-report';
+      } else {
+        setTiktokData(prev => prev.map(d => d.id === item.id ? updatedItem : d));
+        endpoint = '/api/kol-tiktok';
+      }
     } else {
       setData(prev => prev.map(d => d.id === item.id ? updatedItem : d));
     }
 
-    const endpoint = activePlatform === 'TIKTOK' ? '/api/kol-tiktok' : '/api/kol';
     try {
       const res = await fetch(endpoint, {
         method: 'PUT',
@@ -241,6 +299,14 @@ const KOL = () => {
     return { color: '#4b5563', backgroundColor: '#e5e7eb', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem' };
   };
 
+  const getStatusStyle = (status) => {
+    if (!status) return {};
+    const s = status.toLowerCase();
+    if (s.includes('approve') || s.includes('acc')) return { backgroundColor: '#dcfce7', color: '#166534', padding: '0.25rem 0.5rem', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem' };
+    if (s.includes('revis')) return { backgroundColor: '#fef3c7', color: '#92400e', padding: '0.25rem 0.5rem', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem' };
+    return { backgroundColor: '#f3f4f6', color: '#374151', padding: '0.25rem 0.5rem', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem' };
+  };
+
   const handleExportExcel = async () => {
     if (filteredData.length === 0) {
       alert("Tidak ada data untuk diekspor.");
@@ -250,9 +316,60 @@ const KOL = () => {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet(`Data ${activePlatform}`);
+      let sheetName = activePlatform;
+      if (activePlatform === 'TIKTOK') sheetName = `TIKTOK ${activeTiktokTab}`;
+      const sheet = workbook.addWorksheet(`Data ${sheetName}`);
 
-      if (activePlatform === 'TIKTOK') {
+      if (activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten') {
+        sheet.mergeCells('A1:O1');
+        const titleCell = sheet.getCell('A1');
+        titleCell.value = `Laporan Report Konten - TIKTOK`;
+        titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
+        titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        sheet.addRow([]);
+
+        const headers = ["No", "PIC", "Name", "PLATFORM", "LINK SOSMED", "BRIEF", "Draft Video", "Draft Foto", "Feedback", "Status", "Revised Draft Video 1", "Feedback", "Status", "Link Post Tiktok", "Date Post Tiktok", "Kode Boost"];
+        const headerRow = sheet.addRow(headers);
+        headerRow.eachCell((cell) => {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEA00' } };
+          cell.font = { bold: true, color: { argb: 'FF000000' } };
+          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        });
+
+        sheet.columns = [
+          { width: 5 }, { width: 15 }, { width: 20 }, { width: 15 }, { width: 35 }, 
+          { width: 25 }, { width: 25 }, { width: 25 }, { width: 30 }, { width: 15 }, 
+          { width: 25 }, { width: 30 }, { width: 15 }, { width: 35 }, { width: 15 }, { width: 20 }
+        ];
+
+        filteredData.forEach((item, index) => {
+          const row = sheet.addRow([
+            index + 1,
+            item.pic || '-',
+            item.nama_talent || '-',
+            item.platform || '-',
+            item.link_sosmed || '-',
+            item.brief || '-',
+            item.draft_video || '-',
+            item.draft_foto || '-',
+            item.feedback_1 || '-',
+            item.status_1 || '-',
+            item.revised_draft_video_1 || '-',
+            item.feedback_2 || '-',
+            item.status_2 || '-',
+            item.link_post_tiktok || '-',
+            item.date_post_tiktok ? new Date(item.date_post_tiktok).toLocaleDateString('id-ID') : '-',
+            item.kode_boost || '-'
+          ]);
+
+          row.eachCell((cell) => {
+            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          });
+        });
+
+      } else if (activePlatform === 'TIKTOK' && activeTiktokTab === 'Data KOL') {
         sheet.mergeCells('A1:J1');
         const titleCell = sheet.getCell('A1');
         titleCell.value = `Laporan Data KOL - TIKTOK`;
@@ -351,7 +468,8 @@ const KOL = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Laporan_KOL_${activePlatform}_${new Date().toISOString().split('T')[0]}.xlsx`);
+      const fileNameStr = activePlatform === 'TIKTOK' ? `Laporan_KOL_${activePlatform}_${activeTiktokTab.replace(' ', '_')}` : `Laporan_KOL_${activePlatform}`;
+      link.setAttribute('download', `${fileNameStr}_${new Date().toISOString().split('T')[0]}.xlsx`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -362,12 +480,19 @@ const KOL = () => {
   };
 
   const totalActiveKol = filteredData.length;
-  const totalBudgetSpent = filteredData.reduce((acc, curr) => acc + (parseFloat(curr.ratecard) || 0), 0);
+  let totalBudgetSpent = 0;
+  if (!(activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten')) {
+    totalBudgetSpent = filteredData.reduce((acc, curr) => acc + (parseFloat(curr.ratecard) || 0), 0);
+  }
   
-  // Only applicable for META for 'diiklankan', for Tiktok maybe 'acc_kerjasama'
-  const totalDiiklankan = activePlatform === 'TIKTOK' 
-    ? filteredData.filter(item => item.acc_kerjasama).length 
-    : filteredData.filter(item => item.diiklankan).length;
+  let totalDiiklankan = 0;
+  if (activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten') {
+    totalDiiklankan = filteredData.filter(item => (item.status_1 || '').toLowerCase().includes('approve') || (item.status_2 || '').toLowerCase().includes('approve')).length;
+  } else if (activePlatform === 'TIKTOK') {
+    totalDiiklankan = filteredData.filter(item => item.acc_kerjasama).length;
+  } else {
+    totalDiiklankan = filteredData.filter(item => item.diiklankan).length;
+  }
 
   const renderLink = (url) => {
     if (!url || url === '-') return '-';
@@ -391,7 +516,7 @@ const KOL = () => {
             <FiDownload /> Export Excel
           </button>
           <button className="action-btn" onClick={() => handleOpenModal()}>
-            <FiPlus /> Tambah KOL {activePlatform}
+            <FiPlus /> Tambah Data
           </button>
         </div>
       </div>
@@ -408,31 +533,48 @@ const KOL = () => {
         ))}
       </div>
 
+      {activePlatform === 'TIKTOK' && (
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+          <button 
+            onClick={() => setActiveTiktokTab('Data KOL')}
+            style={{ padding: '0.5rem 1.2rem', borderRadius: '8px', border: activeTiktokTab === 'Data KOL' ? '1px solid var(--primary-color)' : '1px solid var(--border-color)', backgroundColor: activeTiktokTab === 'Data KOL' ? 'var(--primary-color)' : 'var(--bg-color)', color: activeTiktokTab === 'Data KOL' ? 'white' : 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: '500' }}
+          >Data KOL</button>
+          <button 
+            onClick={() => setActiveTiktokTab('Report Konten')}
+            style={{ padding: '0.5rem 1.2rem', borderRadius: '8px', border: activeTiktokTab === 'Report Konten' ? '1px solid var(--primary-color)' : '1px solid var(--border-color)', backgroundColor: activeTiktokTab === 'Report Konten' ? 'var(--primary-color)' : 'var(--bg-color)', color: activeTiktokTab === 'Report Konten' ? 'white' : 'var(--text-main)', cursor: 'pointer', transition: 'all 0.2s', fontWeight: '500' }}
+          >Report Konten</button>
+        </div>
+      )}
+
       <div className="kpi-grid mb-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
           <div style={{ backgroundColor: 'rgba(79, 70, 229, 0.1)', padding: '1rem', borderRadius: '12px', color: 'var(--primary-color)' }}>
             <FiUsers size={28} />
           </div>
           <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Total KOL {activePlatform}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Total Baris Data</div>
             <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-main)' }}>{totalActiveKol}</div>
           </div>
         </div>
-        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
-          <div style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', padding: '1rem', borderRadius: '12px', color: 'var(--success-color)' }}>
-            <FiDollarSign size={28} />
+        {!(activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten') && (
+          <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
+            <div style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', padding: '1rem', borderRadius: '12px', color: 'var(--success-color)' }}>
+              <FiDollarSign size={28} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Total Ratecard (Budget)</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-main)' }}>{formatRupiah(totalBudgetSpent)}</div>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Total Ratecard (Budget)</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--text-main)' }}>{formatRupiah(totalBudgetSpent)}</div>
-          </div>
-        </div>
+        )}
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
           <div style={{ backgroundColor: 'rgba(234, 179, 8, 0.1)', padding: '1rem', borderRadius: '12px', color: '#eab308' }}>
             <FiCheckSquare size={28} />
           </div>
           <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>{activePlatform === 'TIKTOK' ? 'Acc Kerjasama' : 'Konten Diiklankan'}</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>
+              {activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten' ? 'Total Approved' : (activePlatform === 'TIKTOK' ? 'Acc Kerjasama' : 'Konten Diiklankan')}
+            </div>
             <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-main)' }}>{totalDiiklankan}</div>
           </div>
         </div>
@@ -443,7 +585,7 @@ const KOL = () => {
           <FiSearch className="search-icon" />
           <input 
             type="text" 
-            placeholder={activePlatform === 'TIKTOK' ? "Cari Nama Talent atau Link Akun..." : "Cari Nama Produk, Akun, atau KOL..."}
+            placeholder={activePlatform === 'TIKTOK' ? (activeTiktokTab === 'Report Konten' ? "Cari PIC, Nama Talent..." : "Cari Nama Talent atau Link Akun...") : "Cari Nama Produk, Akun, atau KOL..."}
             className="filter-input pl-8"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -474,7 +616,66 @@ const KOL = () => {
       </div>
 
       <div className="table-container" style={{ overflowX: 'auto' }}>
-        {activePlatform === 'TIKTOK' ? (
+        {activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten' ? (
+          <table className="data-table" style={{ minWidth: '2200px' }}>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>PIC</th>
+                <th>Name</th>
+                <th>PLATFORM</th>
+                <th style={{textAlign: 'center'}}>LINK SOSMED</th>
+                <th>BRIEF</th>
+                <th>Draft Video</th>
+                <th>Draft Foto</th>
+                <th>Feedback 1</th>
+                <th style={{textAlign: 'center'}}>Status 1</th>
+                <th>Revised Draft Video 1</th>
+                <th>Feedback 2</th>
+                <th style={{textAlign: 'center'}}>Status 2</th>
+                <th style={{textAlign: 'center'}}>Link Post Tiktok</th>
+                <th>Date Post Tiktok</th>
+                <th>Kode Boost</th>
+                <th style={{textAlign: 'center', position: 'sticky', right: 0, backgroundColor: 'var(--bg-color)', zIndex: 1}}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.map((item, index) => (
+                <tr key={item.id}>
+                  <td style={{ color: 'var(--text-muted)' }}>{index + 1}</td>
+                  <td>{item.pic || '-'}</td>
+                  <td className="font-medium" style={{ color: 'var(--text-main)' }}>{item.nama_talent || '-'}</td>
+                  <td>{item.platform || '-'}</td>
+                  <td style={{textAlign: 'center'}}>{renderLink(item.link_sosmed)}</td>
+                  <td><div style={{ maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.brief}>{item.brief || '-'}</div></td>
+                  <td>{item.draft_video || '-'}</td>
+                  <td>{item.draft_foto || '-'}</td>
+                  <td><div style={{ maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.feedback_1}>{item.feedback_1 || '-'}</div></td>
+                  <td style={{textAlign: 'center'}}><span style={getStatusStyle(item.status_1)}>{item.status_1 || '-'}</span></td>
+                  <td>{item.revised_draft_video_1 || '-'}</td>
+                  <td><div style={{ maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.feedback_2}>{item.feedback_2 || '-'}</div></td>
+                  <td style={{textAlign: 'center'}}><span style={getStatusStyle(item.status_2)}>{item.status_2 || '-'}</span></td>
+                  <td style={{textAlign: 'center'}}>{renderLink(item.link_post_tiktok)}</td>
+                  <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
+                    {item.date_post_tiktok ? new Date(item.date_post_tiktok).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'}
+                  </td>
+                  <td>{item.kode_boost || '-'}</td>
+                  <td style={{textAlign: 'center', position: 'sticky', right: 0, backgroundColor: 'var(--bg-color)', zIndex: 1, boxShadow: '-2px 0 5px rgba(0,0,0,0.05)'}}>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                      <button style={{ color: 'var(--text-muted)' }} onClick={() => handleOpenModal(item)} title="Edit"><FiEdit2 /></button>
+                      <button style={{ color: 'var(--danger-color)' }} onClick={() => handleDelete(item.id)} title="Hapus"><FiTrash2 /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredData.length === 0 && (
+                <tr>
+                  <td colSpan="17" style={{ textAlign: 'center', padding: '3rem' }}>Belum ada data Report Konten.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        ) : activePlatform === 'TIKTOK' && activeTiktokTab === 'Data KOL' ? (
           <table className="data-table" style={{ minWidth: '1600px' }}>
             <thead>
               <tr>
@@ -610,24 +811,122 @@ const KOL = () => {
       {/* Modal Form */}
       {isModalOpen && (
         <div className="modal-overlay" style={{ padding: '1rem' }}>
-          <div className="modal-content" style={{ width: '100%', maxWidth: '700px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+          <div className="modal-content" style={{ width: '100%', maxWidth: '800px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
             <div className="modal-header">
               <h3>{editingItem ? `Edit Data ${activePlatform}` : `Tambah Data ${activePlatform}`}</h3>
               <button className="modal-close" onClick={handleCloseModal}><FiX size={24} /></button>
             </div>
             
             <form onSubmit={handleSave} className="modal-form" style={{ overflowY: 'auto' }}>
-              <div className="form-group">
-                <label>Tanggal</label>
-                <input type="date" name="tanggal" value={formData.tanggal} onChange={handleInputChange} className="login-input" required />
-              </div>
-
-              {activePlatform === 'TIKTOK' ? (
+              
+              {activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten' ? (
                 <>
                   <div className="form-row">
                     <div className="form-group">
+                      <label>PIC</label>
+                      <input type="text" name="pic" value={formData.pic} onChange={handleInputChange} className="login-input" placeholder="Nama PIC" />
+                    </div>
+                    <div className="form-group">
+                      <label>Name (Talent)</label>
+                      <input type="text" name="nama_talent" value={formData.nama_talent} onChange={handleInputChange} className="login-input" placeholder="Nama Talent" required />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Platform</label>
+                      <select name="platform" value={formData.platform} onChange={handleInputChange} className="login-input">
+                        <option value="TIKTOK">TIKTOK</option>
+                        <option value="META">META</option>
+                        <option value="MARKETPLACE">MARKETPLACE</option>
+                        <option value="YOUTUBE">YOUTUBE</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Link Sosmed</label>
+                      <input type="url" name="link_sosmed" value={formData.link_sosmed} onChange={handleInputChange} className="login-input" placeholder="https://..." />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Brief</label>
+                    <input type="text" name="brief" value={formData.brief} onChange={handleInputChange} className="login-input" placeholder="Nama/Link File Brief" />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Draft Video</label>
+                      <input type="text" name="draft_video" value={formData.draft_video} onChange={handleInputChange} className="login-input" placeholder="Nama/Link Draft Video" />
+                    </div>
+                    <div className="form-group">
+                      <label>Draft Foto</label>
+                      <input type="text" name="draft_foto" value={formData.draft_foto} onChange={handleInputChange} className="login-input" placeholder="Nama/Link Draft Foto" />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Feedback 1</label>
+                      <textarea name="feedback_1" value={formData.feedback_1} onChange={handleInputChange} className="login-input" placeholder="Tulis feedback..." rows="2"></textarea>
+                    </div>
+                    <div className="form-group">
+                      <label>Status 1</label>
+                      <select name="status_1" value={formData.status_1} onChange={handleInputChange} className="login-input">
+                        <option value="Draft">Draft</option>
+                        <option value="Revised">Revised</option>
+                        <option value="Approved">Approved</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Revised Draft Video 1</label>
+                    <input type="text" name="revised_draft_video_1" value={formData.revised_draft_video_1} onChange={handleInputChange} className="login-input" placeholder="Link/Nama File Revisi" />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Feedback 2</label>
+                      <textarea name="feedback_2" value={formData.feedback_2} onChange={handleInputChange} className="login-input" placeholder="Tulis feedback lanjutan..." rows="2"></textarea>
+                    </div>
+                    <div className="form-group">
+                      <label>Status 2</label>
+                      <select name="status_2" value={formData.status_2} onChange={handleInputChange} className="login-input">
+                        <option value="">-- Kosong --</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Revised">Revised</option>
+                        <option value="Approved">Approved</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Link Post Tiktok</label>
+                      <input type="url" name="link_post_tiktok" value={formData.link_post_tiktok} onChange={handleInputChange} className="login-input" placeholder="https://vt.tiktok.com/..." />
+                    </div>
+                    <div className="form-group">
+                      <label>Date Post Tiktok</label>
+                      <input type="date" name="date_post_tiktok" value={formData.date_post_tiktok} onChange={handleInputChange} className="login-input" />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Kode Boost</label>
+                    <input type="text" name="kode_boost" value={formData.kode_boost} onChange={handleInputChange} className="login-input" placeholder="Masukkan kode iklan..." />
+                  </div>
+                </>
+              ) : activePlatform === 'TIKTOK' && activeTiktokTab === 'Data KOL' ? (
+                <>
+                  <div className="form-group">
+                    <label>Tanggal</label>
+                    <input type="date" name="tanggal" value={formData.tanggal} onChange={handleInputChange} className="login-input" required />
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
                       <label>Nama Talent</label>
-                      <input type="text" name="nama_talent" value={formData.nama_talent} onChange={handleInputChange} className="login-input" placeholder="Nama Talent" />
+                      <input type="text" name="nama_talent" value={formData.nama_talent} onChange={handleInputChange} className="login-input" placeholder="Nama Talent" required />
                     </div>
                     <div className="form-group">
                       <label>Kategori Talent</label>
@@ -688,6 +987,11 @@ const KOL = () => {
                 </>
               ) : (
                 <>
+                  <div className="form-group">
+                    <label>Tanggal</label>
+                    <input type="date" name="tanggal" value={formData.tanggal} onChange={handleInputChange} className="login-input" required />
+                  </div>
+
                   <div className="form-row">
                     <div className="form-group">
                       <label>Nama Produk</label>
