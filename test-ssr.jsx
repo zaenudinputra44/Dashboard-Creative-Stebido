@@ -1,14 +1,12 @@
-import fs from 'fs';
-import { renderToString } from 'react-dom/server';
 import React from 'react';
-import App from './src/App.jsx';
+import ReactDOMServer from 'react-dom/server';
 import KOL from './src/pages/KOL.jsx';
-import { BrowserRouter } from 'react-router-dom';
 
 try {
-  console.log("Rendering KOL...");
-  const html = renderToString(React.createElement(KOL));
-  console.log("Render successful!");
-} catch (e) {
-  console.error("CRASH DURING RENDER:", e);
+  // We need to mock window and browser globals because it's SSR
+  global.window = {};
+  const html = ReactDOMServer.renderToString(<KOL />);
+  console.log("RENDER SUCCESS, length:", html.length);
+} catch (err) {
+  console.error("REACT CRASH ERROR:", err);
 }

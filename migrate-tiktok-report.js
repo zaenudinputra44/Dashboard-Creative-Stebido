@@ -84,6 +84,10 @@ async function run() {
     
     let count = 0;
     
+    // Clear old data to prevent duplicates
+    await sql`TRUNCATE TABLE kol_tiktok_report`;
+    console.log("Tabel lama berhasil dibersihkan, mulai memasukkan data baru...");
+    
     for (const row of dataRows) {
       if (!row[2] || row[2].trim() === '') continue; // Skip empty names
       
