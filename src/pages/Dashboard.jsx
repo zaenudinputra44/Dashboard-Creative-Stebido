@@ -36,7 +36,7 @@ const Dashboard = () => {
     try {
       const [monRes, kolRes, techRes, evalRes, perfRes] = await Promise.all([
         fetch('/api/monitoring').then(r => r.ok ? r.json() : []),
-        fetch('/api/monitoring-kol').then(r => r.ok ? r.json() : []),
+        fetch('/api/monitoring?type=kol').then(r => r.ok ? r.json() : []),
         fetch('/api/technical').then(r => r.ok ? r.json() : []),
         fetch('/api/evaluation').then(r => r.ok ? r.json() : []),
         fetch('/api/performance').then(r => r.ok ? r.json() : [])

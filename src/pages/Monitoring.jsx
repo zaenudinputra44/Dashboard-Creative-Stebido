@@ -25,7 +25,7 @@ const Monitoring = () => {
         setData(initialData);
       });
 
-    fetch('/api/monitoring-kol')
+    fetch('/api/monitoring?type=kol')
       .then(res => res.ok ? res.json() : [])
       .then(dbData => {
         setDataKol(Array.isArray(dbData) ? dbData : []);
@@ -171,7 +171,7 @@ const Monitoring = () => {
     } else {
       try {
         if (editingItem) {
-          const res = await fetch('/api/monitoring-kol', {
+          const res = await fetch('/api/monitoring?type=kol', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...formDataKol, id: editingItem.id })
@@ -180,7 +180,7 @@ const Monitoring = () => {
           const updatedItem = await res.json();
           setDataKol(prev => prev.map(item => item.id === editingItem.id ? updatedItem : item));
         } else {
-          const res = await fetch('/api/monitoring-kol', {
+          const res = await fetch('/api/monitoring?type=kol', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formDataKol)
@@ -198,7 +198,7 @@ const Monitoring = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-      const endpoint = activeTab === 'CWM' ? '/api/monitoring' : '/api/monitoring-kol';
+      const endpoint = activeTab === 'CWM' ? '/api/monitoring' : '/api/monitoring?type=kol';
       try {
         const res = await fetch(`${endpoint}?id=${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Gagal menghapus data');
@@ -236,7 +236,7 @@ const Monitoring = () => {
         setTimeout(() => setNotification(null), 4000);
       }
       try {
-        await fetch('/api/monitoring-kol', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedItem) });
+        await fetch('/api/monitoring?type=kol', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedItem) });
       } catch (err) {}
     }
   };
