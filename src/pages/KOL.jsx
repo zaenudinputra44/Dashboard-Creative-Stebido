@@ -133,11 +133,8 @@ const KOL = () => {
             brief: '',
             draft_video: '',
             draft_foto: '',
-            feedback_1: '',
-            status_1: 'Draft',
-            revised_draft_video_1: '',
-            feedback_2: '',
-            status_2: '',
+            feedback: '',
+            status: 'Draft',
             link_post_tiktok: '',
             date_post_tiktok: new Date().toISOString().split('T')[0],
             kode_boost: ''
@@ -321,14 +318,14 @@ const KOL = () => {
       const sheet = workbook.addWorksheet(`Data ${sheetName}`);
 
       if (activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten') {
-        sheet.mergeCells('A1:O1');
+        sheet.mergeCells('A1:L1');
         const titleCell = sheet.getCell('A1');
         titleCell.value = `Laporan Report Konten - TIKTOK`;
         titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
         titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
         sheet.addRow([]);
 
-        const headers = ["No", "PIC", "Name", "PLATFORM", "LINK SOSMED", "BRIEF", "Draft Video", "Draft Foto", "Feedback", "Status", "Revised Draft Video 1", "Feedback", "Status", "Link Post Tiktok", "Date Post Tiktok", "Kode Boost"];
+        const headers = ["No", "PIC", "Name", "PLATFORM", "LINK SOSMED", "BRIEF", "Draft Video", "Draft Foto", "Feedback", "Status", "Link Post Tiktok", "Date Post Tiktok", "Kode Boost"];
         const headerRow = sheet.addRow(headers);
         headerRow.eachCell((cell) => {
           cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEA00' } };
@@ -340,7 +337,7 @@ const KOL = () => {
         sheet.columns = [
           { width: 5 }, { width: 15 }, { width: 20 }, { width: 15 }, { width: 35 }, 
           { width: 25 }, { width: 25 }, { width: 25 }, { width: 30 }, { width: 15 }, 
-          { width: 25 }, { width: 30 }, { width: 15 }, { width: 35 }, { width: 15 }, { width: 20 }
+          { width: 35 }, { width: 15 }, { width: 20 }
         ];
 
         filteredData.forEach((item, index) => {
@@ -353,11 +350,8 @@ const KOL = () => {
             item.brief || '-',
             item.draft_video || '-',
             item.draft_foto || '-',
-            item.feedback_1 || '-',
-            item.status_1 || '-',
-            item.revised_draft_video_1 || '-',
-            item.feedback_2 || '-',
-            item.status_2 || '-',
+            item.feedback || '-',
+            item.status || '-',
             item.link_post_tiktok || '-',
             item.date_post_tiktok ? new Date(item.date_post_tiktok).toLocaleDateString('id-ID') : '-',
             item.kode_boost || '-'
@@ -617,7 +611,7 @@ const KOL = () => {
 
       <div className="table-container" style={{ overflowX: 'auto' }}>
         {activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten' ? (
-          <table className="data-table" style={{ minWidth: '2200px' }}>
+          <table className="data-table" style={{ minWidth: '1800px' }}>
             <thead>
               <tr>
                 <th>No</th>
@@ -628,11 +622,8 @@ const KOL = () => {
                 <th>BRIEF</th>
                 <th>Draft Video</th>
                 <th>Draft Foto</th>
-                <th>Feedback 1</th>
-                <th style={{textAlign: 'center'}}>Status 1</th>
-                <th>Revised Draft Video 1</th>
-                <th>Feedback 2</th>
-                <th style={{textAlign: 'center'}}>Status 2</th>
+                <th>Feedback</th>
+                <th style={{textAlign: 'center'}}>Status</th>
                 <th style={{textAlign: 'center'}}>Link Post Tiktok</th>
                 <th>Date Post Tiktok</th>
                 <th>Kode Boost</th>
@@ -650,11 +641,8 @@ const KOL = () => {
                   <td><div style={{ maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.brief}>{item.brief || '-'}</div></td>
                   <td>{item.draft_video || '-'}</td>
                   <td>{item.draft_foto || '-'}</td>
-                  <td><div style={{ maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.feedback_1}>{item.feedback_1 || '-'}</div></td>
-                  <td style={{textAlign: 'center'}}><span style={getStatusStyle(item.status_1)}>{item.status_1 || '-'}</span></td>
-                  <td>{item.revised_draft_video_1 || '-'}</td>
-                  <td><div style={{ maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.feedback_2}>{item.feedback_2 || '-'}</div></td>
-                  <td style={{textAlign: 'center'}}><span style={getStatusStyle(item.status_2)}>{item.status_2 || '-'}</span></td>
+                  <td><div style={{ maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.feedback}>{item.feedback || '-'}</div></td>
+                  <td style={{textAlign: 'center'}}><span style={getStatusStyle(item.status)}>{item.status || '-'}</span></td>
                   <td style={{textAlign: 'center'}}>{renderLink(item.link_post_tiktok)}</td>
                   <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
                     {item.date_post_tiktok ? new Date(item.date_post_tiktok).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'}
@@ -670,7 +658,7 @@ const KOL = () => {
               ))}
               {filteredData.length === 0 && (
                 <tr>
-                  <td colSpan="17" style={{ textAlign: 'center', padding: '3rem' }}>Belum ada data Report Konten.</td>
+                  <td colSpan="14" style={{ textAlign: 'center', padding: '3rem' }}>Belum ada data Report Konten.</td>
                 </tr>
               )}
             </tbody>
@@ -866,33 +854,12 @@ const KOL = () => {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Feedback 1</label>
-                      <textarea name="feedback_1" value={formData.feedback_1} onChange={handleInputChange} className="login-input" placeholder="Tulis feedback..." rows="2"></textarea>
+                      <label>Feedback</label>
+                      <textarea name="feedback" value={formData.feedback} onChange={handleInputChange} className="login-input" placeholder="Tulis feedback..." rows="2"></textarea>
                     </div>
                     <div className="form-group">
-                      <label>Status 1</label>
-                      <select name="status_1" value={formData.status_1} onChange={handleInputChange} className="login-input">
-                        <option value="Draft">Draft</option>
-                        <option value="Revised">Revised</option>
-                        <option value="Approved">Approved</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Revised Draft Video 1</label>
-                    <input type="text" name="revised_draft_video_1" value={formData.revised_draft_video_1} onChange={handleInputChange} className="login-input" placeholder="Link/Nama File Revisi" />
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Feedback 2</label>
-                      <textarea name="feedback_2" value={formData.feedback_2} onChange={handleInputChange} className="login-input" placeholder="Tulis feedback lanjutan..." rows="2"></textarea>
-                    </div>
-                    <div className="form-group">
-                      <label>Status 2</label>
-                      <select name="status_2" value={formData.status_2} onChange={handleInputChange} className="login-input">
-                        <option value="">-- Kosong --</option>
+                      <label>Status</label>
+                      <select name="status" value={formData.status} onChange={handleInputChange} className="login-input">
                         <option value="Draft">Draft</option>
                         <option value="Revised">Revised</option>
                         <option value="Approved">Approved</option>

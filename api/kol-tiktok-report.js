@@ -9,21 +9,18 @@ export default async function handler(req, res) {
     else if (req.method === 'POST') {
       const { 
         pic, nama_talent, platform, link_sosmed, brief, draft_video, draft_foto, 
-        feedback_1, status_1, revised_draft_video_1, feedback_2, status_2, 
-        link_post_tiktok, date_post_tiktok, kode_boost
+        feedback, status, link_post_tiktok, date_post_tiktok, kode_boost
       } = req.body;
       
       const result = await sql`
         INSERT INTO kol_tiktok_report (
           pic, nama_talent, platform, link_sosmed, brief, draft_video, draft_foto, 
-          feedback_1, status_1, revised_draft_video_1, feedback_2, status_2, 
-          link_post_tiktok, date_post_tiktok, kode_boost
+          feedback, status, link_post_tiktok, date_post_tiktok, kode_boost
         )
         VALUES (
           ${pic || ''}, ${nama_talent || ''}, ${platform || 'TIKTOK'}, ${link_sosmed || ''},
           ${brief || ''}, ${draft_video || ''}, ${draft_foto || ''},
-          ${feedback_1 || ''}, ${status_1 || ''}, ${revised_draft_video_1 || ''},
-          ${feedback_2 || ''}, ${status_2 || ''}, ${link_post_tiktok || ''},
+          ${feedback || ''}, ${status || ''}, ${link_post_tiktok || ''},
           ${date_post_tiktok ? date_post_tiktok : null}, ${kode_boost || ''}
         )
         RETURNING *
@@ -33,8 +30,7 @@ export default async function handler(req, res) {
     else if (req.method === 'PUT') {
       const { 
         id, pic, nama_talent, platform, link_sosmed, brief, draft_video, draft_foto, 
-        feedback_1, status_1, revised_draft_video_1, feedback_2, status_2, 
-        link_post_tiktok, date_post_tiktok, kode_boost
+        feedback, status, link_post_tiktok, date_post_tiktok, kode_boost
       } = req.body;
       
       const result = await sql`
@@ -47,11 +43,8 @@ export default async function handler(req, res) {
           brief = ${brief || ''},
           draft_video = ${draft_video || ''},
           draft_foto = ${draft_foto || ''},
-          feedback_1 = ${feedback_1 || ''},
-          status_1 = ${status_1 || ''},
-          revised_draft_video_1 = ${revised_draft_video_1 || ''},
-          feedback_2 = ${feedback_2 || ''},
-          status_2 = ${status_2 || ''},
+          feedback = ${feedback || ''},
+          status = ${status || ''},
           link_post_tiktok = ${link_post_tiktok || ''},
           date_post_tiktok = ${date_post_tiktok ? date_post_tiktok : null},
           kode_boost = ${kode_boost || ''}

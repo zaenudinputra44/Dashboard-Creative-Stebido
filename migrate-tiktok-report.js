@@ -94,11 +94,11 @@ async function run() {
       const brief = (row[5] || '').trim();
       const draft_video = (row[6] || '').trim();
       const draft_foto = (row[7] || '').trim();
-      const feedback_1 = (row[8] || '').trim();
-      const status_1 = (row[9] || '').trim();
-      const revised_draft = (row[10] || '').trim();
-      const feedback_2 = (row[11] || '').trim();
-      const status_2 = (row[12] || '').trim();
+      
+      // Using feedback_1 and status_1 as the single feedback/status
+      const feedback = (row[8] || '').trim();
+      const status = (row[9] || '').trim();
+      
       const link_post = (row[13] || '').trim();
       const date_post = parseDate(row[14]);
       const kode_boost = (row[15] || '').trim();
@@ -106,14 +106,12 @@ async function run() {
       await sql`
         INSERT INTO kol_tiktok_report (
           pic, nama_talent, platform, link_sosmed, brief, draft_video, draft_foto, 
-          feedback_1, status_1, revised_draft_video_1, feedback_2, status_2, 
-          link_post_tiktok, date_post_tiktok, kode_boost
+          feedback, status, link_post_tiktok, date_post_tiktok, kode_boost
         )
         VALUES (
           ${pic}, ${nama_talent}, ${platform}, ${link_sosmed},
           ${brief}, ${draft_video}, ${draft_foto},
-          ${feedback_1}, ${status_1}, ${revised_draft},
-          ${feedback_2}, ${status_2}, ${link_post},
+          ${feedback}, ${status}, ${link_post},
           ${date_post ? date_post : null}, ${kode_boost}
         )
       `;
