@@ -491,9 +491,10 @@ const KOL = () => {
   const renderFileChip = (text) => {
     if (!text || text === '-') return '-';
     
+    const strText = String(text);
     // Extract extension based on common formats
     let ext = '';
-    const lower = text.toLowerCase();
+    const lower = strText.toLowerCase();
     if (lower.includes('.doc') || lower.includes('.docx')) ext = 'DOCX';
     else if (lower.includes('.pdf')) ext = 'PDF';
     else if (lower.includes('.mp4')) ext = 'MP4';
@@ -502,7 +503,7 @@ const KOL = () => {
     else if (lower.includes('drive.google.com') || lower.includes('docs.google.com')) ext = 'GDRIVE';
     
     // Find URL
-    const urlMatch = text.match(/https?:\/\/[^\s]+/);
+    const urlMatch = strText.match(/https?:\/\/[^\s]+/);
     let href = null;
     if (urlMatch) {
       href = urlMatch[0];
