@@ -2,28 +2,34 @@ import { sql } from './_db.js';
 
 export default async function handler(req, res) {
   try {
-    // Pastikan tabel kol_reports ada
-    await sql`
-      CREATE TABLE IF NOT EXISTS kol_reports (
-        id SERIAL PRIMARY KEY,
-        nama_kol VARCHAR(150) NOT NULL,
-        platform VARCHAR(50),
-        tingkat VARCHAR(50),
-        pic VARCHAR(100),
-        status VARCHAR(50),
-        jadwal_tayang DATE,
-        biaya NUMERIC,
-        link_hasil TEXT,
-        kategori VARCHAR(100) DEFAULT 'internal',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
-    // Pastikan kolom baru ditambahkan bagi data lama (migrasi otomatis)
+    // Drop table if it doesn't have the new schema (we do this once to ensure clean slate since we TRUNCATED anyway)
+    // To be safe and not drop dynamically on every request, we just check if nama_produk column exists
+    // If not, we alter or drop. We'll drop and recreate since it's totally different.
     try {
-      await sql`ALTER TABLE kol_reports ADD COLUMN IF NOT EXISTS kategori VARCHAR(100) DEFAULT 'internal'`;
+      await sql`SELECT nama_produk FROM kol_reports LIMIT 1`;
     } catch (e) {
-      console.log('Kolom kategori sudah ada atau error:', e.message);
+      console.log('Migrasi skema database baru untuk KOL...');
+      await sql`DROP TABLE IF EXISTS kol_reports`;
+      await sql`
+        CREATE TABLE kol_reports (
+          id SERIAL PRIMARY KEY,
+          kategori VARCHAR(100) DEFAULT 'endors_stebido',
+          nama_produk VARCHAR(150),
+          pic_kol VARCHAR(150),
+          nama_akun VARCHAR(150),
+          tingkat_kategori VARCHAR(50),
+          no_whatsapp VARCHAR(50),
+          tipe VARCHAR(50),
+          ratecard NUMERIC DEFAULT 0,
+          link_ig TEXT,
+          link_gdrive TEXT,
+          link_upload_reels TEXT,
+          link_upload_story TEXT,
+          all_upload BOOLEAN DEFAULT FALSE,
+          diiklankan BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `;
     }
 
     if (req.method === 'GET') {
@@ -31,28 +37,51 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     } 
     else if (req.method === 'POST') {
-      const { nama_kol, platform, tingkat, pic, status, jadwal_tayang, biaya, link_hasil, kategori } = req.body;
+      const { 
+        kategori, nama_produk, pic_kol, nama_akun, tingkat_kategori, 
+        no_whatsapp, tipe, ratecard, link_ig, link_gdrive, 
+        link_upload_reels, link_upload_story, all_upload, diiklankan 
+      } = req.body;
+      
       const result = await sql`
-        INSERT INTO kol_reports (nama_kol, platform, tingkat, pic, status, jadwal_tayang, biaya, link_hasil, kategori)
-        VALUES (${nama_kol}, ${platform}, ${tingkat}, ${pic}, ${status}, ${jadwal_tayang || null}, ${biaya || 0}, ${link_hasil || ''}, ${kategori || 'internal'})
+        INSERT INTO kol_reports (
+          kategori, nama_produk, pic_kol, nama_akun, tingkat_kategori, 
+          no_whatsapp, tipe, ratecard, link_ig, link_gdrive, 
+          link_upload_reels, link_upload_story, all_upload, diiklankan
+        )
+        VALUES (
+          ${kategori || 'endors_stebido'}, ${nama_produk || ''}, ${pic_kol || ''}, ${nama_akun || ''}, ${tingkat_kategori || 'Micro'},
+          ${no_whatsapp || ''}, ${tipe || 'Short & Reels'}, ${ratecard || 0}, ${link_ig || ''}, ${link_gdrive || ''},
+          ${link_upload_reels || ''}, ${link_upload_story || ''}, ${all_upload || false}, ${diiklankan || false}
+        )
         RETURNING *
       `;
       return res.status(201).json(result[0]);
     }
     else if (req.method === 'PUT') {
-      const { id, nama_kol, platform, tingkat, pic, status, jadwal_tayang, biaya, link_hasil, kategori } = req.body;
+      const { 
+        id, kategori, nama_produk, pic_kol, nama_akun, tingkat_kategori, 
+        no_whatsapp, tipe, ratecard, link_ig, link_gdrive, 
+        link_upload_reels, link_upload_story, all_upload, diiklankan 
+      } = req.body;
+      
       const result = await sql`
         UPDATE kol_reports 
         SET 
-          nama_kol = ${nama_kol},
-          platform = ${platform},
-          tingkat = ${tingkat},
-          pic = ${pic},
-          status = ${status},
-          jadwal_tayang = ${jadwal_tayang || null},
-          biaya = ${biaya || 0},
-          link_hasil = ${link_hasil || ''},
-          kategori = ${kategori || 'internal'}
+          kategori = ${kategori || 'endors_stebido'},
+          nama_produk = ${nama_produk || ''},
+          pic_kol = ${pic_kol || ''},
+          nama_akun = ${nama_akun || ''},
+          tingkat_kategori = ${tingkat_kategori || 'Micro'},
+          no_whatsapp = ${no_whatsapp || ''},
+          tipe = ${tipe || 'Short & Reels'},
+          ratecard = ${ratecard || 0},
+          link_ig = ${link_ig || ''},
+          link_gdrive = ${link_gdrive || ''},
+          link_upload_reels = ${link_upload_reels || ''},
+          link_upload_story = ${link_upload_story || ''},
+          all_upload = ${all_upload},
+          diiklankan = ${diiklankan}
         WHERE id = ${id}
         RETURNING *
       `;
