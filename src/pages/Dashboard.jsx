@@ -86,15 +86,15 @@ const Dashboard = () => {
   // Transform monitoring data for productivity chart (KOL)
   const kolStats = {};
   monitoringKolData.forEach(job => {
-    const pic = job.picKol || 'Tanpa PIC';
-    if (!kolStats[pic]) {
-      kolStats[pic] = { name: pic.split(' ')[0], selesai: 0, proses: 0, total: 0 };
+    const kol = job.namaKol || 'Tanpa Nama KOL';
+    if (!kolStats[kol]) {
+      kolStats[kol] = { name: kol.split(' ')[0], selesai: 0, proses: 0, total: 0 };
     }
-    kolStats[pic].total += 1;
+    kolStats[kol].total += 1;
     if (job.status === 'Selesai') {
-      kolStats[pic].selesai += 1;
+      kolStats[kol].selesai += 1;
     } else {
-      kolStats[pic].proses += 1;
+      kolStats[kol].proses += 1;
     }
   });
 
@@ -184,7 +184,7 @@ const Dashboard = () => {
           </div>
 
           <div className="card chart-section">
-            <h3 className="card-title">Grafik Produktivitas Tim (Top 5 PIC KOL)</h3>
+            <h3 className="card-title">Grafik Produktivitas KOL (Top 5 Influencer)</h3>
             <div className="chart-container">
               {dynamicKolChartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
