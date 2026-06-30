@@ -27,22 +27,25 @@ const KPICard = ({ title, value, icon, trend, trendValue, colorClass }) => (
 
 const Dashboard = () => {
   const [monitoringData, setMonitoringData] = useState([]);
+  const [monitoringKolData, setMonitoringKolData] = useState([]);
   const [technicalIssues, setTechnicalIssues] = useState([]);
   const [evaluations, setEvaluations] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
   
   const fetchData = async () => {
     try {
-      const [monRes, techRes, evalRes, perfRes] = await Promise.all([
+      const [monRes, kolRes, techRes, evalRes, perfRes] = await Promise.all([
         fetch('/api/monitoring').then(r => r.ok ? r.json() : []),
+        fetch('/api/monitoring-kol').then(r => r.ok ? r.json() : []),
         fetch('/api/technical').then(r => r.ok ? r.json() : []),
         fetch('/api/evaluation').then(r => r.ok ? r.json() : []),
         fetch('/api/performance').then(r => r.ok ? r.json() : [])
       ]);
-      setMonitoringData(monRes);
-      setTechnicalIssues(techRes);
-      setEvaluations(evalRes);
-      setPerformanceData(perfRes);
+      setMonitoringData(Array.isArray(monRes) ? monRes : []);
+      setMonitoringKolData(Array.isArray(kolRes) ? kolRes : []);
+      setTechnicalIssues(Array.isArray(techRes) ? techRes : []);
+      setEvaluations(Array.isArray(evalRes) ? evalRes : []);
+      setPerformanceData(Array.isArray(perfRes) ? perfRes : []);
     } catch (err) {
       console.warn('Dashboard fetch error:', err.message);
     }
@@ -54,14 +57,14 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const totalJobs = monitoringData.length;
-  const completedJobs = monitoringData.filter(job => job.status === 'Selesai').length;
-  const inProgressJobs = monitoringData.filter(job => job.status !== 'Selesai').length;
+  const totalJobs = monitoringData.length + monitoringKolData.length;
+  const completedJobs = monitoringData.filter(job => job.status === 'Selesai').length + monitoringKolData.filter(job => job.status === 'Selesai').length;
+  const inProgressJobs = totalJobs - completedJobs;
 
   const dueTodayJobs = monitoringData.filter(job => job.status !== 'Selesai').slice(0, 3);
   const unresolvedIssues = technicalIssues.filter(issue => issue.status !== 'Selesai');
   
-  // Transform monitoring data for productivity chart
+  // Transform monitoring data for productivity chart (CWM)
   const executorStats = {};
   monitoringData.forEach(job => {
     const exec = job.executorCWM || 'Tanpa Executor';
@@ -80,7 +83,26 @@ const Dashboard = () => {
     .sort((a, b) => b.total - a.total)
     .slice(0, 5);
 
-  // Identify top PIC dynamically
+  // Transform monitoring data for productivity chart (KOL)
+  const kolStats = {};
+  monitoringKolData.forEach(job => {
+    const pic = job.picKol || 'Tanpa PIC';
+    if (!kolStats[pic]) {
+      kolStats[pic] = { name: pic.split(' ')[0], selesai: 0, proses: 0, total: 0 };
+    }
+    kolStats[pic].total += 1;
+    if (job.status === 'Selesai') {
+      kolStats[pic].selesai += 1;
+    } else {
+      kolStats[pic].proses += 1;
+    }
+  });
+
+  const dynamicKolChartData = Object.values(kolStats)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
+
+  // Identify top PIC dynamically (combined CWM & KOL)
   const picStats = {};
   monitoringData.forEach(job => {
     if (job.status === 'Selesai') {
@@ -88,6 +110,13 @@ const Dashboard = () => {
       picStats[pic] = (picStats[pic] || 0) + 1;
     }
   });
+  monitoringKolData.forEach(job => {
+    if (job.status === 'Selesai') {
+      const pic = job.picKol ? job.picKol.split(' ')[0] : 'Unknown';
+      picStats[pic] = (picStats[pic] || 0) + 1;
+    }
+  });
+
   let topPic = 'Belum Ada';
   let topPicScore = 0;
   Object.keys(picStats).forEach(pic => {
@@ -102,7 +131,7 @@ const Dashboard = () => {
       {/* KPI Section */}
       <div className="kpi-grid">
         <KPICard 
-          title="Total Pekerjaan" 
+          title="Total Pekerjaan (CWM & KOL)" 
           value={totalJobs} 
           icon={<FiCheckCircle size={24} />} 
           trend="up" 
@@ -129,29 +158,54 @@ const Dashboard = () => {
 
       <div className="dashboard-main-grid">
         {/* Chart Section */}
-        <div className="card chart-section">
-          <h3 className="card-title">Grafik Produktivitas Tim (Top 5 Executor)</h3>
-          <div className="chart-container">
-            {dynamicChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dynamicChartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                <XAxis dataKey="name" stroke="var(--text-muted)" />
-                <YAxis stroke="var(--text-muted)" />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}
-                />
-                <Legend />
-                <Bar dataKey="selesai" name="Pekerjaan Selesai" fill="var(--success-color)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="proses" name="Pekerjaan Proses" fill="var(--warning-color)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-            ) : (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-muted)' }}>
-                Belum ada data monitoring pekerjaan.
-              </div>
-            )}
+        <div className="charts-column" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          
+          <div className="card chart-section">
+            <h3 className="card-title">Grafik Produktivitas Tim (Top 5 Executor CWM)</h3>
+            <div className="chart-container">
+              {dynamicChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={dynamicChartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                    <XAxis dataKey="name" stroke="var(--text-muted)" />
+                    <YAxis stroke="var(--text-muted)" />
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} />
+                    <Legend />
+                    <Bar dataKey="selesai" name="Pekerjaan Selesai" fill="var(--success-color)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="proses" name="Pekerjaan Proses" fill="var(--warning-color)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-muted)' }}>
+                  Belum ada data monitoring pekerjaan CWM.
+                </div>
+              )}
+            </div>
           </div>
+
+          <div className="card chart-section">
+            <h3 className="card-title">Grafik Produktivitas Tim (Top 5 PIC KOL)</h3>
+            <div className="chart-container">
+              {dynamicKolChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={dynamicKolChartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                    <XAxis dataKey="name" stroke="var(--text-muted)" />
+                    <YAxis stroke="var(--text-muted)" />
+                    <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }} />
+                    <Legend />
+                    <Bar dataKey="selesai" name="Pekerjaan Selesai" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="proses" name="Pekerjaan Proses" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-muted)' }}>
+                  Belum ada data monitoring pekerjaan KOL.
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
 
         {/* Right Sidebar - Summary */}
