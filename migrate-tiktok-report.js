@@ -92,12 +92,22 @@ async function run() {
       const platform = (row[3] || 'TIKTOK').trim();
       const link_sosmed = (row[4] || '').trim();
       const brief = (row[5] || '').trim();
-      const draft_video = (row[6] || '').trim();
+      const draft_video_1 = (row[6] || '').trim();
       const draft_foto = (row[7] || '').trim();
       
-      // Using feedback_1 and status_1 as the single feedback/status
-      const feedback = (row[8] || '').trim();
-      const status = (row[9] || '').trim();
+      const feedback_1 = (row[8] || '').trim();
+      const status_1 = (row[9] || '').trim();
+      const revised_draft = (row[10] || '').trim();
+      const feedback_2 = (row[11] || '').trim();
+      const status_2 = (row[12] || '').trim();
+      
+      // Combine smartly into single columns
+      const draft_video = revised_draft ? revised_draft : draft_video_1;
+      const status = status_2 ? status_2 : status_1;
+      let feedback = feedback_1;
+      if (feedback_2) {
+        feedback = feedback ? `${feedback} | ${feedback_2}` : feedback_2;
+      }
       
       const link_post = (row[13] || '').trim();
       const date_post = parseDate(row[14]);

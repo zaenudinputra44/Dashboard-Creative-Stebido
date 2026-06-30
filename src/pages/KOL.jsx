@@ -488,13 +488,59 @@ const KOL = () => {
     totalDiiklankan = filteredData.filter(item => item.diiklankan).length;
   }
 
-  const renderLink = (url) => {
-    if (!url || url === '-') return '-';
-    const href = url.startsWith('http') || url.startsWith('wa.me') ? (url.startsWith('wa.me') ? `https://${url}` : url) : `https://${url}`;
+  const renderFileChip = (text) => {
+    if (!text || text === '-') return '-';
+    
+    // Extract extension based on common formats
+    let ext = '';
+    const lower = text.toLowerCase();
+    if (lower.includes('.doc') || lower.includes('.docx')) ext = 'DOCX';
+    else if (lower.includes('.pdf')) ext = 'PDF';
+    else if (lower.includes('.mp4')) ext = 'MP4';
+    else if (lower.includes('.mov')) ext = 'MOV';
+    else if (lower.includes('.xls') || lower.includes('.xlsx')) ext = 'XLSX';
+    else if (lower.includes('drive.google.com') || lower.includes('docs.google.com')) ext = 'GDRIVE';
+    
+    // Find URL
+    const urlMatch = text.match(/https?:\/\/[^\s]+/);
+    let href = null;
+    if (urlMatch) {
+      href = urlMatch[0];
+    } else if (lower.startsWith('www.')) {
+      href = 'https://' + text.split(' ')[0];
+    }
+
+    const badgeColor = 
+      ext === 'DOCX' ? '#2563eb' : 
+      ext === 'PDF' ? '#dc2626' : 
+      (ext === 'MP4' || ext === 'MOV') ? '#db2777' : 
+      ext === 'XLSX' ? '#16a34a' : 
+      ext === 'GDRIVE' ? '#ca8a04' : '#6b7280';
+
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.25rem', backgroundColor: 'var(--bg-color)', borderRadius: '4px', textDecoration: 'none', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-        Buka <FiExternalLink />
-      </a>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: 'var(--bg-color)', padding: '0.3rem 0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', width: 'max-content', maxWidth: '200px' }}>
+        {ext && (
+          <span style={{ 
+            fontSize: '0.65rem', 
+            fontWeight: 'bold', 
+            backgroundColor: badgeColor, 
+            color: 'white', 
+            padding: '0.15rem 0.35rem', 
+            borderRadius: '4px' 
+          }}>
+            {ext}
+          </span>
+        )}
+        {href ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: '500', fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={text}>
+            Buka File <FiExternalLink style={{marginLeft: '2px'}}/>
+          </a>
+        ) : (
+          <span style={{ fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={text}>
+            {text}
+          </span>
+        )}
+      </div>
     );
   };
 
@@ -638,9 +684,9 @@ const KOL = () => {
                   <td className="font-medium" style={{ color: 'var(--text-main)' }}>{item.nama_talent || '-'}</td>
                   <td>{item.platform || '-'}</td>
                   <td style={{textAlign: 'center'}}>{renderLink(item.link_sosmed)}</td>
-                  <td><div style={{ maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.brief}>{item.brief || '-'}</div></td>
-                  <td>{item.draft_video || '-'}</td>
-                  <td>{item.draft_foto || '-'}</td>
+                  <td>{renderFileChip(item.brief)}</td>
+                  <td>{renderFileChip(item.draft_video)}</td>
+                  <td>{renderFileChip(item.draft_foto)}</td>
                   <td><div style={{ maxWidth: '180px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={item.feedback}>{item.feedback || '-'}</div></td>
                   <td style={{textAlign: 'center'}}><span style={getStatusStyle(item.status)}>{item.status || '-'}</span></td>
                   <td style={{textAlign: 'center'}}>{renderLink(item.link_post_tiktok)}</td>
