@@ -33,35 +33,7 @@ const Settings = () => {
     }, 500);
   };
 
-  const handleClearLocalData = async () => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus semua cache dan data lokal? Anda mungkin perlu login kembali.")) {
-      // 1. Clear Local Storage
-      localStorage.clear();
-      
-      // 2. Clear Session Storage
-      sessionStorage.clear();
-      
-      // 3. Clear Cache Storage (Service Workers/Browser Cache API)
-      try {
-        if ('caches' in window) {
-          const cacheNames = await caches.keys();
-          await Promise.all(cacheNames.map(name => caches.delete(name)));
-        }
-      } catch (err) {
-        console.warn("Gagal membersihkan cache storage", err);
-      }
-      
-      // 4. Clear Cookies
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c
-          .replace(/^ +/, "")
-          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
 
-      // 5. Hard Reload
-      window.location.reload(true);
-    }
-  };
 
   return (
     <div className="page-container">
@@ -159,22 +131,7 @@ const Settings = () => {
           </form>
         </div>
 
-        {/* Manajemen Cache */}
-        <div className="card" style={{ gridColumn: '1 / -1' }}>
-          <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--danger-color)' }}>
-            <FiTrash2 /> Pemeliharaan Sistem
-          </h3>
-          <p className="text-muted" style={{ fontSize: '0.875rem', marginTop: '0.5rem', marginBottom: '1rem' }}>
-            Gunakan opsi ini jika dasbor mengalami kendala visual atau Anda ingin mereset pengaturan lokal pada browser ini.
-          </p>
-          <button 
-            className="action-btn" 
-            style={{ backgroundColor: 'transparent', color: 'var(--danger-color)', border: '1px solid var(--danger-color)' }}
-            onClick={handleClearLocalData}
-          >
-            Bersihkan Data Cache & Sesi Lokal
-          </button>
-        </div>
+
 
       </div>
     </div>
