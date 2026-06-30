@@ -284,6 +284,13 @@ const KOL = () => {
     }
   };
 
+  const formatDate = (dateString, options = {day: 'numeric', month: 'short', year: 'numeric'}) => {
+    if (!dateString) return '-';
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('id-ID', options);
+  };
+
   const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number || 0);
   };
@@ -354,7 +361,7 @@ const KOL = () => {
             item.feedback || '-',
             item.status || '-',
             item.link_post_tiktok || '-',
-            item.date_post_tiktok ? new Date(item.date_post_tiktok).toLocaleDateString('id-ID') : '-',
+            item.date_post_tiktok ? formatDate(item.date_post_tiktok, undefined) : '-',
             item.kode_boost || '-'
           ]);
 
@@ -389,7 +396,7 @@ const KOL = () => {
         filteredData.forEach((item, index) => {
           const row = sheet.addRow([
             index + 1,
-            item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID') : '-',
+            item.tanggal ? formatDate(item.tanggal, undefined) : '-',
             item.nama_talent || '-',
             item.kategori_talent || '-',
             item.link_akun_tiktok || '-',
@@ -434,7 +441,7 @@ const KOL = () => {
         filteredData.forEach((item, index) => {
           const row = sheet.addRow([
             index + 1,
-            item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID') : '-',
+            item.tanggal ? formatDate(item.tanggal, undefined) : '-',
             item.nama_produk || '-',
             item.pic_kol || '-',
             item.nama_akun || '-',
@@ -693,7 +700,7 @@ const KOL = () => {
                   <td style={{textAlign: 'center'}}><span style={getStatusStyle(item.status)}>{item.status || '-'}</span></td>
                   <td style={{textAlign: 'center'}}>{renderLink(item.link_post_tiktok)}</td>
                   <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
-                    {item.date_post_tiktok ? new Date(item.date_post_tiktok).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'}
+                    {formatDate(item.date_post_tiktok)}
                   </td>
                   <td>{item.kode_boost || '-'}</td>
                   <td style={{textAlign: 'center', position: 'sticky', right: 0, backgroundColor: 'var(--bg-color)', zIndex: 1, boxShadow: '-2px 0 5px rgba(0,0,0,0.05)'}}>
@@ -732,7 +739,7 @@ const KOL = () => {
               {filteredData.map(item => (
                 <tr key={item.id}>
                   <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
-                    {item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'}
+                    {formatDate(item.tanggal)}
                   </td>
                   <td className="font-medium" style={{ color: 'var(--text-main)' }}>{item.nama_talent || '-'}</td>
                   <td>
@@ -794,7 +801,7 @@ const KOL = () => {
               {filteredData.map(item => (
                 <tr key={item.id}>
                   <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
-                    {item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'}
+                    {formatDate(item.tanggal)}
                   </td>
                   <td className="font-medium" style={{ color: 'var(--text-main)' }}>{item.nama_produk || '-'}</td>
                   <td>{item.pic_kol || '-'}</td>
