@@ -74,8 +74,10 @@ const KOL = () => {
     if (activePlatform === 'TIKTOK') {
       sourceData = activeTiktokTab === 'Report Konten' ? tiktokReportData : tiktokData;
     } else {
-      sourceData = data.filter(item => item && (item.platform || 'META') === activePlatform);
+      sourceData = Array.isArray(data) ? data.filter(item => item && (item.platform || 'META') === activePlatform) : [];
     }
+    
+    if (!Array.isArray(sourceData)) sourceData = [];
     
     return sourceData.filter(item => {
       if (!item) return false;
