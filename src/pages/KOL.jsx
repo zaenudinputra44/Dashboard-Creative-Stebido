@@ -78,7 +78,10 @@ const KOL = () => {
     link_hasil: ''
   });
 
-  const filteredData = data.filter(item => {
+  // Filter based on activeTab (kategori)
+  const tabData = data.filter(item => (item.kategori || 'internal') === activeTab);
+
+  const filteredData = tabData.filter(item => {
     const matchesSearch = (item.nama_kol || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (item.pic || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'All' || item.status === filterStatus;
@@ -100,7 +103,8 @@ const KOL = () => {
         status: 'Negosiasi',
         jadwal_tayang: '',
         biaya: '',
-        link_hasil: ''
+        link_hasil: '',
+        kategori: activeTab
       });
     }
     setIsModalOpen(true);
@@ -310,9 +314,9 @@ const KOL = () => {
     }
   };
 
-  // KPI Calculations
-  const totalActiveKol = data.filter(item => item.status !== 'Batal').length;
-  const totalBudgetSpent = data.reduce((acc, curr) => acc + (parseFloat(curr.biaya) || 0), 0);
+  // KPI Calculations (Based on current active tab)
+  const totalActiveKol = tabData.filter(item => item.status !== 'Batal').length;
+  const totalBudgetSpent = tabData.reduce((acc, curr) => acc + (parseFloat(curr.biaya) || 0), 0);
 
   return (
     <div className="page-container">
@@ -349,9 +353,7 @@ const KOL = () => {
         ))}
       </div>
 
-      {activeTab === 'internal' ? (
-        <>
-          <div className="kpi-grid mb-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+      <div className="kpi-grid mb-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
           <div style={{ backgroundColor: 'rgba(79, 70, 229, 0.1)', padding: '1rem', borderRadius: '12px', color: 'var(--primary-color)' }}>
             <FiUsers size={28} />
@@ -562,17 +564,6 @@ const KOL = () => {
               </div>
             </form>
           </div>
-        </div>
-      )}
-        </>
-      ) : (
-        <div style={{ width: '100%', height: 'calc(100vh - 250px)', minHeight: '600px', backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-          <iframe 
-            src={sheets[activeTab].url} 
-            style={{ width: '100%', height: '100%', border: 'none' }}
-            title={sheets[activeTab].title}
-            allowFullScreen
-          />
         </div>
       )}
     </div>

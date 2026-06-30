@@ -14,25 +14,33 @@ export default async function handler(req, res) {
         jadwal_tayang DATE,
         biaya NUMERIC,
         link_hasil TEXT,
+        kategori VARCHAR(100) DEFAULT 'internal',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
+
+    // Pastikan kolom baru ditambahkan bagi data lama (migrasi otomatis)
+    try {
+      await sql`ALTER TABLE kol_reports ADD COLUMN IF NOT EXISTS kategori VARCHAR(100) DEFAULT 'internal'`;
+    } catch (e) {
+      console.log('Kolom kategori sudah ada atau error:', e.message);
+    }
 
     if (req.method === 'GET') {
       const data = await sql`SELECT * FROM kol_reports ORDER BY id DESC`;
       return res.status(200).json(data);
     } 
     else if (req.method === 'POST') {
-      const { nama_kol, platform, tingkat, pic, status, jadwal_tayang, biaya, link_hasil } = req.body;
+      const { nama_kol, platform, tingkat, pic, status, jadwal_tayang, biaya, link_hasil, kategori } = req.body;
       const result = await sql`
-        INSERT INTO kol_reports (nama_kol, platform, tingkat, pic, status, jadwal_tayang, biaya, link_hasil)
-        VALUES (${nama_kol}, ${platform}, ${tingkat}, ${pic}, ${status}, ${jadwal_tayang || null}, ${biaya || 0}, ${link_hasil || ''})
+        INSERT INTO kol_reports (nama_kol, platform, tingkat, pic, status, jadwal_tayang, biaya, link_hasil, kategori)
+        VALUES (${nama_kol}, ${platform}, ${tingkat}, ${pic}, ${status}, ${jadwal_tayang || null}, ${biaya || 0}, ${link_hasil || ''}, ${kategori || 'internal'})
         RETURNING *
       `;
       return res.status(201).json(result[0]);
     }
     else if (req.method === 'PUT') {
-      const { id, nama_kol, platform, tingkat, pic, status, jadwal_tayang, biaya, link_hasil } = req.body;
+      const { id, nama_kol, platform, tingkat, pic, status, jadwal_tayang, biaya, link_hasil, kategori } = req.body;
       const result = await sql`
         UPDATE kol_reports 
         SET 
@@ -43,7 +51,8 @@ export default async function handler(req, res) {
           status = ${status},
           jadwal_tayang = ${jadwal_tayang || null},
           biaya = ${biaya || 0},
-          link_hasil = ${link_hasil || ''}
+          link_hasil = ${link_hasil || ''},
+          kategori = ${kategori || 'internal'}
         WHERE id = ${id}
         RETURNING *
       `;
