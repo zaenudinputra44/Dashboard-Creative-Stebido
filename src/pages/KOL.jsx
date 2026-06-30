@@ -74,10 +74,11 @@ const KOL = () => {
     if (activePlatform === 'TIKTOK') {
       sourceData = activeTiktokTab === 'Report Konten' ? tiktokReportData : tiktokData;
     } else {
-      sourceData = data.filter(item => (item.platform || 'META') === activePlatform);
+      sourceData = data.filter(item => item && (item.platform || 'META') === activePlatform);
     }
     
     return sourceData.filter(item => {
+      if (!item) return false;
       let searchString = '';
       if (activePlatform === 'TIKTOK') {
         if (activeTiktokTab === 'Report Konten') {
@@ -289,7 +290,7 @@ const KOL = () => {
 
   const getCategoryStyle = (category) => {
     if (!category) return {};
-    const catLower = category.toLowerCase();
+    const catLower = String(category).toLowerCase();
     if (catLower.includes('nano')) return { color: '#dc2626', backgroundColor: '#fecaca', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem' };
     if (catLower.includes('micro')) return { color: '#2563eb', backgroundColor: '#bfdbfe', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem' };
     if (catLower.includes('macro')) return { color: '#9a3412', backgroundColor: '#fed7aa', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem' };
@@ -481,7 +482,7 @@ const KOL = () => {
   
   let totalDiiklankan = 0;
   if (activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten') {
-    totalDiiklankan = filteredData.filter(item => (item.status || '').toLowerCase().includes('approve')).length;
+    totalDiiklankan = filteredData.filter(item => String(item.status || '').toLowerCase().includes('approve')).length;
   } else if (activePlatform === 'TIKTOK') {
     totalDiiklankan = filteredData.filter(item => item.acc_kerjasama).length;
   } else {
