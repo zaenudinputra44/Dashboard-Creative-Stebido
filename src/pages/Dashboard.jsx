@@ -86,7 +86,7 @@ const Dashboard = () => {
   // Transform monitoring data for productivity chart (KOL)
   const kolStats = {};
   monitoringKolData.forEach(job => {
-    const kol = job.namaKol || 'Tanpa Nama KOL';
+    const kol = job.picKol || 'Tanpa PIC KOL';
     if (!kolStats[kol]) {
       kolStats[kol] = { name: kol.split(' ')[0], selesai: 0, proses: 0, total: 0 };
     }
