@@ -14,6 +14,7 @@ import KOL from './pages/KOL.jsx';
 import Login from './pages/Login';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import NotificationBell from './components/NotificationBell';
+import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 
 // Force Cache Busting - v2

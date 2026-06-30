@@ -10,6 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
+    <script>
+      window.addEventListener('error', function(e) {
+        document.body.innerHTML = '<div style="padding: 20px; color: red;"><h1>FATAL BROWSER CRASH:</h1><h3>' + e.message + '</h3><pre>' + e.error?.stack + '</pre></div>';
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        document.body.innerHTML = '<div style="padding: 20px; color: red;"><h1>FATAL PROMISE CRASH:</h1><h3>' + e.reason + '</h3></div>';
+      });
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
