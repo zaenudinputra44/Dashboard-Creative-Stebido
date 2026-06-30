@@ -10,7 +10,7 @@ const KOL = () => {
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterPlatform, setFilterPlatform] = useState('All');
   const [teamMembers, setTeamMembers] = useState(teamData);
-  const [activeTab, setActiveTab] = useState('internal');
+  const [activeTab, setActiveTab] = useState('endors_stebido');
 
   const sheets = {
     'endors_stebido': {
@@ -336,12 +336,6 @@ const KOL = () => {
       </div>
 
       <div style={{ display: 'flex', gap: '1.5rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
-        <button 
-          onClick={() => setActiveTab('internal')}
-          style={{ background: 'none', border: 'none', borderBottom: activeTab === 'internal' ? '2px solid var(--primary-color)' : 'none', color: activeTab === 'internal' ? 'var(--primary-color)' : 'var(--text-muted)', fontWeight: activeTab === 'internal' ? '600' : 'normal', padding: '0.5rem 0', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '1rem', transition: 'all 0.2s' }}
-        >
-          Database Internal
-        </button>
         {Object.entries(sheets).map(([key, sheet]) => (
           <button 
             key={key}
