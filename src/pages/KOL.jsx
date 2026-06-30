@@ -9,6 +9,7 @@ const KOL = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMonth, setFilterMonth] = useState('All');
   const [filterYear, setFilterYear] = useState('All');
+  const [activePlatform, setActivePlatform] = useState('META');
   const [teamMembers, setTeamMembers] = useState(teamData);
 
   const fetchData = () => {
@@ -62,11 +63,12 @@ const KOL = () => {
     link_upload_story: '',
     all_upload: false,
     diiklankan: false,
-    kategori: 'endors_stebido'
+    kategori: 'endors_stebido',
+    platform: 'META'
   });
 
-  // Remove tab filtering, show all data
-  const tabData = data;
+  // Filter by platform tab
+  const tabData = data.filter(item => (item.platform || 'META') === activePlatform);
 
   const filteredData = tabData.filter(item => {
     const matchesSearch = (item.nama_produk || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -108,7 +110,8 @@ const KOL = () => {
         link_upload_story: '',
         all_upload: false,
         diiklankan: false,
-        kategori: 'endors_stebido'
+        kategori: 'endors_stebido',
+        platform: activePlatform
       });
     }
     setIsModalOpen(true);
@@ -222,12 +225,12 @@ const KOL = () => {
     try {
       const ExcelJS = (await import('exceljs')).default;
       const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('Data KOL');
+      const sheet = workbook.addWorksheet(`Data KOL ${activePlatform}`);
 
       // Add Title
       sheet.mergeCells('A1:O1');
       const titleCell = sheet.getCell('A1');
-      titleCell.value = `Laporan Data KOL`;
+      titleCell.value = `Laporan Data KOL - ${activePlatform}`;
       titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
       titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
@@ -283,7 +286,7 @@ const KOL = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Laporan_KOL_${new Date().toISOString().split('T')[0]}.xlsx`);
+      link.setAttribute('download', `Laporan_KOL_${activePlatform}_${new Date().toISOString().split('T')[0]}.xlsx`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -322,6 +325,18 @@ const KOL = () => {
             <FiPlus /> Tambah KOL
           </button>
         </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '1.5rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+        {['META', 'TIKTOK', 'MARKETPLACE'].map(plat => (
+          <button 
+            key={plat}
+            onClick={() => setActivePlatform(plat)}
+            style={{ background: 'none', border: 'none', borderBottom: activePlatform === plat ? '2px solid var(--primary-color)' : 'none', color: activePlatform === plat ? 'var(--primary-color)' : 'var(--text-muted)', fontWeight: activePlatform === plat ? '600' : 'normal', padding: '0.5rem 0', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '1rem', transition: 'all 0.2s' }}
+          >
+            {plat}
+          </button>
+        ))}
       </div>
 
       <div className="kpi-grid mb-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
