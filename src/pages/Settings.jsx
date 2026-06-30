@@ -33,10 +33,33 @@ const Settings = () => {
     }, 500);
   };
 
-  const handleClearLocalData = () => {
+  const handleClearLocalData = async () => {
     if (window.confirm("Apakah Anda yakin ingin menghapus semua cache dan data lokal? Anda mungkin perlu login kembali.")) {
+      // 1. Clear Local Storage
       localStorage.clear();
-      window.location.reload();
+      
+      // 2. Clear Session Storage
+      sessionStorage.clear();
+      
+      // 3. Clear Cache Storage (Service Workers/Browser Cache API)
+      try {
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map(name => caches.delete(name)));
+        }
+      } catch (err) {
+        console.warn("Gagal membersihkan cache storage", err);
+      }
+      
+      // 4. Clear Cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+
+      // 5. Hard Reload
+      window.location.reload(true);
     }
   };
 
