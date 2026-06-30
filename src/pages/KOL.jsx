@@ -7,6 +7,8 @@ const KOL = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterMonth, setFilterMonth] = useState('All');
+  const [filterYear, setFilterYear] = useState('All');
   const [teamMembers, setTeamMembers] = useState(teamData);
 
   const fetchData = () => {
@@ -46,6 +48,7 @@ const KOL = () => {
   
   // Form State
   const [formData, setFormData] = useState({
+    tanggal: new Date().toISOString().split('T')[0],
     nama_produk: '',
     pic_kol: '',
     nama_akun: '',
@@ -69,16 +72,29 @@ const KOL = () => {
     const matchesSearch = (item.nama_produk || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (item.nama_akun || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                           (item.pic_kol || '').toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+    
+    let matchesDate = true;
+    if (filterMonth !== 'All' || filterYear !== 'All') {
+      const dateStr = item.tanggal || item.created_at || '';
+      if (dateStr) {
+        const dateObj = new Date(dateStr);
+        if (filterYear !== 'All' && dateObj.getFullYear().toString() !== filterYear) matchesDate = false;
+        if (filterMonth !== 'All' && (dateObj.getMonth() + 1).toString().padStart(2, '0') !== filterMonth) matchesDate = false;
+      }
+    }
+
+    return matchesSearch && matchesDate;
   });
 
   const handleOpenModal = (item = null) => {
     if (item) {
       setEditingItem(item);
-      setFormData(item);
+      const formattedDate = item.tanggal ? new Date(item.tanggal).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      setFormData({ ...item, tanggal: formattedDate });
     } else {
       setEditingItem(null);
       setFormData({
+        tanggal: new Date().toISOString().split('T')[0],
         nama_produk: '',
         pic_kol: '',
         nama_akun: '',
@@ -114,11 +130,8 @@ const KOL = () => {
       setFormData(prev => ({ ...prev, [name]: numericValue }));
     } 
     else if (name === 'no_whatsapp') {
-      // Auto format wa.me logic is applied right before saving or rendering, 
-      // but here we just store raw input. We can format it automatically if it's purely numbers.
       let val = value.trim();
       if (/^(\+62|62|0)[0-9]{8,13}$/.test(val)) {
-        // Convert '08...' to '628...'
         if (val.startsWith('0')) val = '62' + val.substring(1);
         if (val.startsWith('+')) val = val.substring(1);
         val = `https://wa.me/${val}`;
@@ -173,7 +186,6 @@ const KOL = () => {
 
   const handleInlineChange = async (item, field, newValue) => {
     const updatedItem = { ...item, [field]: newValue };
-    // Optimistic update
     setData(prev => prev.map(d => d.id === item.id ? updatedItem : d));
 
     try {
@@ -184,7 +196,6 @@ const KOL = () => {
       });
       if (!res.ok) throw new Error('Gagal update inline');
     } catch (err) {
-      // Revert on error
       fetchData();
     }
   };
@@ -214,7 +225,7 @@ const KOL = () => {
       const sheet = workbook.addWorksheet('Data KOL');
 
       // Add Title
-      sheet.mergeCells('A1:M1');
+      sheet.mergeCells('A1:O1');
       const titleCell = sheet.getCell('A1');
       titleCell.value = `Laporan Data KOL`;
       titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
@@ -223,10 +234,10 @@ const KOL = () => {
       sheet.addRow([]); // Blank row
 
       // Headers
-      const headers = ["No.", "Nama Produk", "KOL", "Nama Akun", "Category", "No. Whatsapp", "Type", "Ratecard", "Link IG", "Link GDrive", "Link Upload IG (Reels)", "Link Upload Story (IGS)", "All Upload", "DIIKLANKAN"];
+      const headers = ["No.", "Tanggal", "Nama Produk", "KOL", "Nama Akun", "Category", "No. Whatsapp", "Type", "Ratecard", "Link IG", "Link GDrive", "Link Upload IG (Reels)", "Link Upload Story (IGS)", "All Upload", "DIIKLANKAN"];
       const headerRow = sheet.addRow(headers);
       headerRow.eachCell((cell) => {
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEA00' } }; // Yellow header like in screenshot
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEA00' } };
         cell.font = { bold: true, color: { argb: 'FF000000' } };
         cell.border = {
           top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
@@ -235,7 +246,7 @@ const KOL = () => {
       });
 
       sheet.columns = [
-        { width: 5 }, { width: 20 }, { width: 15 }, { width: 25 }, { width: 20 },
+        { width: 5 }, { width: 15 }, { width: 20 }, { width: 15 }, { width: 25 }, { width: 20 },
         { width: 20 }, { width: 15 }, { width: 18 }, { width: 25 }, { width: 25 }, 
         { width: 25 }, { width: 25 }, { width: 12 }, { width: 12 }
       ];
@@ -243,6 +254,7 @@ const KOL = () => {
       filteredData.forEach((item, index) => {
         const row = sheet.addRow([
           index + 1,
+          item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID') : '-',
           item.nama_produk || '-',
           item.pic_kol || '-',
           item.nama_akun || '-',
@@ -262,7 +274,7 @@ const KOL = () => {
           cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
           cell.alignment = { vertical: 'middle', horizontal: 'center' };
           
-          if (colNumber === 8) { cell.numFmt = '"Rp"#,##0'; }
+          if (colNumber === 9) { cell.numFmt = '"Rp"#,##0'; }
         });
       });
 
@@ -281,14 +293,12 @@ const KOL = () => {
     }
   };
 
-  // KPI Calculations (Based on current active tab)
-  const totalActiveKol = tabData.length;
-  const totalBudgetSpent = tabData.reduce((acc, curr) => acc + (parseFloat(curr.ratecard) || 0), 0);
-  const totalDiiklankan = tabData.filter(item => item.diiklankan).length;
+  const totalActiveKol = filteredData.length;
+  const totalBudgetSpent = filteredData.reduce((acc, curr) => acc + (parseFloat(curr.ratecard) || 0), 0);
+  const totalDiiklankan = filteredData.filter(item => item.diiklankan).length;
 
   const renderLink = (url) => {
     if (!url || url === '-') return '-';
-    // Clean URL if it doesn't have http
     const href = url.startsWith('http') || url.startsWith('wa.me') ? (url.startsWith('wa.me') ? `https://${url}` : url) : `https://${url}`;
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.25rem', backgroundColor: 'var(--bg-color)', borderRadius: '4px', textDecoration: 'none', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
@@ -355,12 +365,35 @@ const KOL = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        <select className="filter-select" value={filterMonth} onChange={e => setFilterMonth(e.target.value)} style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}>
+          <option value="All">Semua Bulan</option>
+          <option value="01">Januari</option>
+          <option value="02">Februari</option>
+          <option value="03">Maret</option>
+          <option value="04">April</option>
+          <option value="05">Mei</option>
+          <option value="06">Juni</option>
+          <option value="07">Juli</option>
+          <option value="08">Agustus</option>
+          <option value="09">September</option>
+          <option value="10">Oktober</option>
+          <option value="11">November</option>
+          <option value="12">Desember</option>
+        </select>
+        <select className="filter-select" value={filterYear} onChange={e => setFilterYear(e.target.value)} style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)', color: 'var(--text-main)' }}>
+          <option value="All">Semua Tahun</option>
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+        </select>
       </div>
 
       <div className="table-container" style={{ overflowX: 'auto' }}>
-        <table className="data-table" style={{ minWidth: '1500px' }}>
+        <table className="data-table" style={{ minWidth: '1600px' }}>
           <thead>
             <tr>
+              <th>Tanggal</th>
               <th>Nama Produk</th>
               <th>KOL (PIC)</th>
               <th>Nama Akun</th>
@@ -380,6 +413,9 @@ const KOL = () => {
           <tbody>
             {filteredData.map(item => (
               <tr key={item.id}>
+                <td style={{ whiteSpace: 'nowrap', color: 'var(--text-muted)' }}>
+                  {item.tanggal ? new Date(item.tanggal).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric'}) : '-'}
+                </td>
                 <td className="font-medium" style={{ color: 'var(--text-main)' }}>{item.nama_produk || '-'}</td>
                 <td>{item.pic_kol || '-'}</td>
                 <td style={{ fontWeight: '500' }}>{item.nama_akun || '-'}</td>
@@ -388,7 +424,7 @@ const KOL = () => {
                 </td>
                 <td style={{textAlign: 'center'}}>{renderLink(item.no_whatsapp)}</td>
                 <td style={{textAlign: 'center'}}>
-                  <span style={{ backgroundColor: '#22c55e', color: 'white', padding: '0.25rem 0.6rem', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                  <span style={{ backgroundColor: '#22c55e', color: 'white', padding: '0.25rem 0.6rem', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                     {item.tipe || '-'}
                   </span>
                 </td>
@@ -420,7 +456,7 @@ const KOL = () => {
             ))}
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan="14" style={{ textAlign: 'center', padding: '3rem' }}>Belum ada data untuk kategori ini.</td>
+                <td colSpan="15" style={{ textAlign: 'center', padding: '3rem' }}>Belum ada data.</td>
               </tr>
             )}
           </tbody>
@@ -437,6 +473,11 @@ const KOL = () => {
             </div>
             
             <form onSubmit={handleSave} className="modal-form" style={{ overflowY: 'auto' }}>
+              <div className="form-group">
+                <label>Tanggal</label>
+                <input type="date" name="tanggal" value={formData.tanggal} onChange={handleInputChange} className="login-input" required />
+              </div>
+
               <div className="form-row">
                 <div className="form-group">
                   <label>Nama Produk</label>

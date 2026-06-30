@@ -27,6 +27,7 @@ export default async function handler(req, res) {
           link_upload_story TEXT,
           all_upload BOOLEAN DEFAULT FALSE,
           diiklankan BOOLEAN DEFAULT FALSE,
+          tanggal DATE DEFAULT CURRENT_DATE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `;
@@ -40,19 +41,20 @@ export default async function handler(req, res) {
       const { 
         kategori, nama_produk, pic_kol, nama_akun, tingkat_kategori, 
         no_whatsapp, tipe, ratecard, link_ig, link_gdrive, 
-        link_upload_reels, link_upload_story, all_upload, diiklankan 
+        link_upload_reels, link_upload_story, all_upload, diiklankan, tanggal
       } = req.body;
       
       const result = await sql`
         INSERT INTO kol_reports (
           kategori, nama_produk, pic_kol, nama_akun, tingkat_kategori, 
           no_whatsapp, tipe, ratecard, link_ig, link_gdrive, 
-          link_upload_reels, link_upload_story, all_upload, diiklankan
+          link_upload_reels, link_upload_story, all_upload, diiklankan, tanggal
         )
         VALUES (
           ${kategori || 'endors_stebido'}, ${nama_produk || ''}, ${pic_kol || ''}, ${nama_akun || ''}, ${tingkat_kategori || 'Micro'},
           ${no_whatsapp || ''}, ${tipe || 'Short & Reels'}, ${ratecard || 0}, ${link_ig || ''}, ${link_gdrive || ''},
-          ${link_upload_reels || ''}, ${link_upload_story || ''}, ${all_upload || false}, ${diiklankan || false}
+          ${link_upload_reels || ''}, ${link_upload_story || ''}, ${all_upload || false}, ${diiklankan || false}, 
+          COALESCE(${tanggal || null}::date, CURRENT_DATE)
         )
         RETURNING *
       `;
@@ -62,7 +64,7 @@ export default async function handler(req, res) {
       const { 
         id, kategori, nama_produk, pic_kol, nama_akun, tingkat_kategori, 
         no_whatsapp, tipe, ratecard, link_ig, link_gdrive, 
-        link_upload_reels, link_upload_story, all_upload, diiklankan 
+        link_upload_reels, link_upload_story, all_upload, diiklankan, tanggal
       } = req.body;
       
       const result = await sql`
@@ -81,7 +83,8 @@ export default async function handler(req, res) {
           link_upload_reels = ${link_upload_reels || ''},
           link_upload_story = ${link_upload_story || ''},
           all_upload = ${all_upload},
-          diiklankan = ${diiklankan}
+          diiklankan = ${diiklankan},
+          tanggal = COALESCE(${tanggal || null}::date, tanggal)
         WHERE id = ${id}
         RETURNING *
       `;
