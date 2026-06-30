@@ -10,6 +10,26 @@ const KOL = () => {
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterPlatform, setFilterPlatform] = useState('All');
   const [teamMembers, setTeamMembers] = useState(teamData);
+  const [activeTab, setActiveTab] = useState('internal');
+
+  const sheets = {
+    'endors_stebido': {
+      title: 'Endors Stebido',
+      url: 'https://docs.google.com/spreadsheets/d/1OA2ebCxBIuEJ7H5KdjeWvvlv5wxe3q787FO5YH-ijgI/htmlembed?gid=1318087517&widget=true&chrome=false'
+    },
+    'macro_micro': {
+      title: 'Macro & Micro Stebido',
+      url: 'https://docs.google.com/spreadsheets/d/1I8cU9fW2lE0RWEY-mRSmPSQm4ftzIhEShkdcllRDQEo/htmlembed?gid=220343259&widget=true&chrome=false'
+    },
+    'afiliator': {
+      title: 'Afiliator Stebido',
+      url: 'https://docs.google.com/spreadsheets/d/1QPhkLqrII2r2alSu0NSVvLbMzZgdFB3zptZEtzmMf84/htmlembed?gid=689913098&widget=true&chrome=false'
+    },
+    'endors_dokter': {
+      title: 'Endors Dokter Stebido',
+      url: 'https://docs.google.com/spreadsheets/d/1jvbEKRkQGZkT98daWqxzbUXPQ7FWdV82RTuBs6edrLc/htmlembed?gid=0&widget=true&chrome=false'
+    }
+  };
 
   const fetchData = () => {
     fetch('/api/kol')
@@ -311,7 +331,27 @@ const KOL = () => {
         </div>
       </div>
 
-      <div className="kpi-grid mb-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+      <div style={{ display: 'flex', gap: '1.5rem', borderBottom: '1px solid var(--border-color)', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+        <button 
+          onClick={() => setActiveTab('internal')}
+          style={{ background: 'none', border: 'none', borderBottom: activeTab === 'internal' ? '2px solid var(--primary-color)' : 'none', color: activeTab === 'internal' ? 'var(--primary-color)' : 'var(--text-muted)', fontWeight: activeTab === 'internal' ? '600' : 'normal', padding: '0.5rem 0', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '1rem', transition: 'all 0.2s' }}
+        >
+          Database Internal
+        </button>
+        {Object.entries(sheets).map(([key, sheet]) => (
+          <button 
+            key={key}
+            onClick={() => setActiveTab(key)}
+            style={{ background: 'none', border: 'none', borderBottom: activeTab === key ? '2px solid var(--primary-color)' : 'none', color: activeTab === key ? 'var(--primary-color)' : 'var(--text-muted)', fontWeight: activeTab === key ? '600' : 'normal', padding: '0.5rem 0', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '1rem', transition: 'all 0.2s' }}
+          >
+            {sheet.title}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'internal' ? (
+        <>
+          <div className="kpi-grid mb-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
         <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.5rem' }}>
           <div style={{ backgroundColor: 'rgba(79, 70, 229, 0.1)', padding: '1rem', borderRadius: '12px', color: 'var(--primary-color)' }}>
             <FiUsers size={28} />
@@ -522,6 +562,17 @@ const KOL = () => {
               </div>
             </form>
           </div>
+        </div>
+      )}
+        </>
+      ) : (
+        <div style={{ width: '100%', height: 'calc(100vh - 250px)', minHeight: '600px', backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-color)', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+          <iframe 
+            src={sheets[activeTab].url} 
+            style={{ width: '100%', height: '100%', border: 'none' }}
+            title={sheets[activeTab].title}
+            allowFullScreen
+          />
         </div>
       )}
     </div>
