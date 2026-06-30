@@ -481,7 +481,7 @@ const KOL = () => {
   
   let totalDiiklankan = 0;
   if (activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten') {
-    totalDiiklankan = filteredData.filter(item => (item.status_1 || '').toLowerCase().includes('approve') || (item.status_2 || '').toLowerCase().includes('approve')).length;
+    totalDiiklankan = filteredData.filter(item => (item.status || '').toLowerCase().includes('approve')).length;
   } else if (activePlatform === 'TIKTOK') {
     totalDiiklankan = filteredData.filter(item => item.acc_kerjasama).length;
   } else {
@@ -508,7 +508,7 @@ const KOL = () => {
     if (urlMatch) {
       href = urlMatch[0];
     } else if (lower.startsWith('www.')) {
-      href = 'https://' + text.split(' ')[0];
+      href = 'https://' + strText.split(' ')[0];
     }
 
     const badgeColor = 
