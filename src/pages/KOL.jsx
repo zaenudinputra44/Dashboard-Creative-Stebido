@@ -327,142 +327,132 @@ const KOL = () => {
       if (activePlatform === 'TIKTOK') sheetName = `TIKTOK ${activeTiktokTab}`;
       const sheet = workbook.addWorksheet(`Data ${sheetName}`);
 
+      // Style Constants
+      const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } }; // Dark Blue
+      const headerFont = { bold: true, color: { argb: 'FFFFFFFF' } };
+      const zebraFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9FAFB' } }; // Light Gray
+      const borderStyle = { top: { style: 'thin', color: { argb: 'FFD1D5DB' } }, left: { style: 'thin', color: { argb: 'FFD1D5DB' } }, bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } }, right: { style: 'thin', color: { argb: 'FFD1D5DB' } } };
+
+      const createHyperlink = (url) => {
+        if (!url || url === '-') return '-';
+        return { text: 'Buka Link', hyperlink: url };
+      };
+      
+      const applyHyperlinkStyle = (cell, url) => {
+        if (url && url !== '-') {
+          cell.font = { color: { argb: 'FF2563EB' }, underline: true };
+        }
+      };
+
+      const getBooleanBadge = (val) => val ? '✅ Ya' : '❌ Tidak';
+
       if (activePlatform === 'TIKTOK' && activeTiktokTab === 'Report Konten') {
-        sheet.mergeCells('A1:L1');
+        sheet.mergeCells('A1:M1');
         const titleCell = sheet.getCell('A1');
         titleCell.value = `Laporan Report Konten - TIKTOK`;
-        titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
+        titleCell.font = { size: 16, bold: true, color: { argb: 'FF1F2937' } };
         titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        sheet.getRow(1).height = 30;
         sheet.addRow([]);
 
         const headers = ["No", "PIC", "Name", "PLATFORM", "LINK SOSMED", "BRIEF", "Draft Video", "Draft Foto", "Feedback", "Status", "Link Post Tiktok", "Date Post Tiktok", "Kode Boost"];
         const headerRow = sheet.addRow(headers);
         headerRow.eachCell((cell) => {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEA00' } };
-          cell.font = { bold: true, color: { argb: 'FF000000' } };
-          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.fill = headerFill; cell.font = headerFont; cell.border = borderStyle; cell.alignment = { vertical: 'middle', horizontal: 'center' };
         });
 
         sheet.columns = [
-          { width: 5 }, { width: 15 }, { width: 20 }, { width: 15 }, { width: 35 }, 
-          { width: 25 }, { width: 25 }, { width: 25 }, { width: 30 }, { width: 15 }, 
-          { width: 35 }, { width: 15 }, { width: 20 }
+          { width: 5 }, { width: 15 }, { width: 20 }, { width: 15 }, { width: 15 }, 
+          { width: 25 }, { width: 25 }, { width: 25 }, { width: 35 }, { width: 15 }, 
+          { width: 15 }, { width: 15 }, { width: 20 }
         ];
 
         filteredData.forEach((item, index) => {
           const row = sheet.addRow([
-            index + 1,
-            item.pic || '-',
-            item.nama_talent || '-',
-            item.platform || '-',
-            item.link_sosmed || '-',
-            item.brief || '-',
-            item.draft_video || '-',
-            item.draft_foto || '-',
-            item.feedback || '-',
-            item.status || '-',
-            item.link_post_tiktok || '-',
-            item.date_post_tiktok ? formatDate(item.date_post_tiktok, undefined) : '-',
-            item.kode_boost || '-'
+            index + 1, item.pic || '-', item.nama_talent || '-', item.platform || '-',
+            createHyperlink(item.link_sosmed), item.brief || '-', item.draft_video || '-', item.draft_foto || '-',
+            item.feedback || '-', item.status || '-', createHyperlink(item.link_post_tiktok),
+            item.date_post_tiktok ? formatDate(item.date_post_tiktok, undefined) : '-', item.kode_boost || '-'
           ]);
 
-          row.eachCell((cell) => {
-            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          row.eachCell((cell, colNum) => {
+            cell.border = borderStyle; cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            if (index % 2 === 1) cell.fill = zebraFill;
+            if ([5, 11].includes(colNum)) applyHyperlinkStyle(cell, cell.value?.hyperlink);
           });
         });
 
       } else if (activePlatform === 'TIKTOK' && activeTiktokTab === 'Data KOL') {
-        sheet.mergeCells('A1:J1');
+        sheet.mergeCells('A1:K1');
         const titleCell = sheet.getCell('A1');
         titleCell.value = `Laporan Data KOL - TIKTOK`;
-        titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
+        titleCell.font = { size: 16, bold: true, color: { argb: 'FF1F2937' } };
         titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        sheet.getRow(1).height = 30;
         sheet.addRow([]);
 
         const headers = ["No", "Tanggal", "Nama talent", "Kategori Talent", "Link Akun Tiktok", "Ratecard", "Keterangan SOW", "Periode Owning", "Acc Kerjasama", "Notes", "RC Foto"];
         const headerRow = sheet.addRow(headers);
         headerRow.eachCell((cell) => {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEA00' } };
-          cell.font = { bold: true, color: { argb: 'FF000000' } };
-          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.fill = headerFill; cell.font = headerFont; cell.border = borderStyle; cell.alignment = { vertical: 'middle', horizontal: 'center' };
         });
 
         sheet.columns = [
-          { width: 5 }, { width: 15 }, { width: 25 }, { width: 20 }, { width: 35 }, 
-          { width: 18 }, { width: 40 }, { width: 20 }, { width: 15 }, { width: 30 }, { width: 15 }
+          { width: 5 }, { width: 15 }, { width: 25 }, { width: 20 }, { width: 15 }, 
+          { width: 18 }, { width: 35 }, { width: 20 }, { width: 15 }, { width: 30 }, { width: 15 }
         ];
 
         filteredData.forEach((item, index) => {
           const row = sheet.addRow([
-            index + 1,
-            item.tanggal ? formatDate(item.tanggal, undefined) : '-',
-            item.nama_talent || '-',
-            item.kategori_talent || '-',
-            item.link_akun_tiktok || '-',
-            Number(item.ratecard || 0),
-            item.keterangan_sow || '-',
-            item.periode_owning || '-',
-            item.acc_kerjasama ? 'Y' : 'N',
-            item.notes || '-',
-            item.rc_foto || '-'
+            index + 1, item.tanggal ? formatDate(item.tanggal, undefined) : '-', item.nama_talent || '-',
+            item.kategori_talent || '-', createHyperlink(item.link_akun_tiktok), Number(item.ratecard || 0),
+            item.keterangan_sow || '-', item.periode_owning || '-', getBooleanBadge(item.acc_kerjasama),
+            item.notes || '-', item.rc_foto || '-'
           ]);
 
-          row.eachCell((cell, colNumber) => {
-            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            if (colNumber === 6) { cell.numFmt = '"Rp"#,##0'; } // Ratecard
+          row.eachCell((cell, colNum) => {
+            cell.border = borderStyle; cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            if (index % 2 === 1) cell.fill = zebraFill;
+            if (colNum === 5) applyHyperlinkStyle(cell, cell.value?.hyperlink);
+            if (colNum === 6) cell.numFmt = '"Rp"#,##0';
           });
         });
       } else {
-        // META or others
+        // META
         sheet.mergeCells('A1:O1');
         const titleCell = sheet.getCell('A1');
         titleCell.value = `Laporan Data KOL - ${activePlatform}`;
-        titleCell.font = { size: 16, bold: true, color: { argb: 'FF374151' } };
+        titleCell.font = { size: 16, bold: true, color: { argb: 'FF1F2937' } };
         titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        sheet.getRow(1).height = 30;
         sheet.addRow([]);
 
-        const headers = ["No.", "Tanggal", "Nama Produk", "KOL", "Nama Akun", "Category", "No. Whatsapp", "Type", "Ratecard", "Link IG", "Link GDrive", "Link Upload IG (Reels)", "Link Upload Story (IGS)", "All Upload", "DIIKLANKAN"];
+        const headers = ["No.", "Tanggal", "Nama Produk", "KOL", "Nama Akun", "Category", "No. Whatsapp", "Type", "Ratecard", "Link IG", "Link GDrive", "Link Reels", "Link Story", "All Upload", "DIIKLANKAN"];
         const headerRow = sheet.addRow(headers);
         headerRow.eachCell((cell) => {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFEA00' } };
-          cell.font = { bold: true, color: { argb: 'FF000000' } };
-          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.fill = headerFill; cell.font = headerFont; cell.border = borderStyle; cell.alignment = { vertical: 'middle', horizontal: 'center' };
         });
 
         sheet.columns = [
           { width: 5 }, { width: 15 }, { width: 20 }, { width: 15 }, { width: 25 }, { width: 20 },
-          { width: 20 }, { width: 15 }, { width: 18 }, { width: 25 }, { width: 25 }, 
-          { width: 25 }, { width: 25 }, { width: 12 }, { width: 12 }
+          { width: 20 }, { width: 15 }, { width: 18 }, { width: 15 }, { width: 15 }, 
+          { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
         ];
 
         filteredData.forEach((item, index) => {
           const row = sheet.addRow([
-            index + 1,
-            item.tanggal ? formatDate(item.tanggal, undefined) : '-',
-            item.nama_produk || '-',
-            item.pic_kol || '-',
-            item.nama_akun || '-',
-            item.tingkat_kategori || '-',
-            item.no_whatsapp || '-',
-            item.tipe || '-',
-            Number(item.ratecard || 0),
-            item.link_ig || '-',
-            item.link_gdrive || '-',
-            item.link_upload_reels || '-',
-            item.link_upload_story || '-',
-            item.all_upload ? 'Y' : 'N',
-            item.diiklankan ? 'Y' : 'N'
+            index + 1, item.tanggal ? formatDate(item.tanggal, undefined) : '-', item.nama_produk || '-',
+            item.pic_kol || '-', item.nama_akun || '-', item.tingkat_kategori || '-', item.no_whatsapp || '-',
+            item.tipe || '-', Number(item.ratecard || 0), createHyperlink(item.link_ig),
+            createHyperlink(item.link_gdrive), createHyperlink(item.link_upload_reels), createHyperlink(item.link_upload_story),
+            getBooleanBadge(item.all_upload), getBooleanBadge(item.diiklankan)
           ]);
 
-          row.eachCell((cell, colNumber) => {
-            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            if (colNumber === 9) { cell.numFmt = '"Rp"#,##0'; }
+          row.eachCell((cell, colNum) => {
+            cell.border = borderStyle; cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            if (index % 2 === 1) cell.fill = zebraFill;
+            if ([10, 11, 12, 13].includes(colNum)) applyHyperlinkStyle(cell, cell.value?.hyperlink);
+            if (colNum === 9) cell.numFmt = '"Rp"#,##0';
           });
         });
       }
